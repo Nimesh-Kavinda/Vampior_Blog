@@ -46,11 +46,18 @@ Route::get('/editor/dashboard', function () {
 
 // Admin API routes
 Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
+    // Post management routes
     Route::get('/posts', [AdminController::class, 'getPosts'])->name('admin.posts.index');
     Route::post('/posts', [AdminController::class, 'storePost'])->name('admin.posts.store');
     Route::put('/posts/{id}', [AdminController::class, 'updatePost'])->name('admin.posts.update');
     Route::delete('/posts/{id}', [AdminController::class, 'deletePost'])->name('admin.posts.delete');
     Route::post('/posts/{id}/like', [AdminController::class, 'toggleLike'])->name('admin.posts.like');
+
+    // User management routes
+    Route::get('/users', [AdminController::class, 'getUsers'])->name('admin.users.index');
+    Route::post('/users', [AdminController::class, 'storeUser'])->name('admin.users.store');
+    Route::put('/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
+    Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
 });
 
 Route::middleware('auth')->group(function () {

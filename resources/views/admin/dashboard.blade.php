@@ -112,8 +112,8 @@
                 <form id="userFormElement" class="space-y-6">
                     <div class="grid md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Username</label>
-                            <input type="text" id="userName" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300" placeholder="Enter username...">
+                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Full Name</label>
+                            <input type="text" id="userFullName" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300" placeholder="Full name...">
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Email</label>
@@ -122,23 +122,18 @@
                     </div>
 
                     <div class="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Full Name</label>
-                            <input type="text" id="userFullName" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300" placeholder="Full name...">
+                        <div id="passwordField">
+                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Password</label>
+                            <input type="password" id="userPassword" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300" placeholder="Enter password...">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">User Type</label>
+                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Role</label>
                             <select id="userType" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300">
                                 <option value="reader">Reader</option>
                                 <option value="editor">Editor</option>
                                 <option value="admin">Admin</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div id="passwordField">
-                        <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Password</label>
-                        <input type="password" id="userPassword" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300" placeholder="Enter password...">
                     </div>
 
                     <div class="flex space-x-4">
@@ -212,59 +207,8 @@
         // Blog posts data - will be loaded from backend
         let blogPosts = [];
 
-        // Sample users data (you can implement user management similarly)
-        let users = [
-            {
-                id: 1,
-                username: "admin",
-                email: "admin@vampiorblog.com",
-                fullName: "System Administrator",
-                userType: "admin",
-                createdDate: "2024-01-01",
-                lastLogin: "2024-07-29",
-                status: "active"
-            },
-            {
-                id: 2,
-                username: "alex_morgan",
-                email: "alex.morgan@example.com",
-                fullName: "Alex Morgan",
-                userType: "editor",
-                createdDate: "2024-02-15",
-                lastLogin: "2024-07-28",
-                status: "active"
-            },
-            {
-                id: 3,
-                username: "emma_rodriguez",
-                email: "emma.rodriguez@example.com",
-                fullName: "Emma Rodriguez",
-                userType: "editor",
-                createdDate: "2024-03-10",
-                lastLogin: "2024-07-27",
-                status: "active"
-            },
-            {
-                id: 4,
-                username: "jordan_blake",
-                email: "jordan.blake@example.com",
-                fullName: "Jordan Blake",
-                userType: "reader",
-                createdDate: "2024-04-05",
-                lastLogin: "2024-07-26",
-                status: "active"
-            },
-            {
-                id: 5,
-                username: "reader_user",
-                email: "reader@example.com",
-                fullName: "John Reader",
-                userType: "reader",
-                createdDate: "2024-05-20",
-                lastLogin: "2024-07-25",
-                status: "active"
-            }
-        ];
+        // Users data - will be loaded from backend
+        let users = [];
 
         let editingPostId = null;
         let editingUserId = null;
@@ -355,21 +299,91 @@
             }
         }
 
-        // Show notification
-        function showNotification(message, type = 'success') {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white transition-all duration-300 ${
-                type === 'success' ? 'bg-green-500' : 'bg-red-500'
-            }`;
-            notification.textContent = message;
+        // Load users from backend
+        async function loadUsers() {
+            try {
+                const response = await fetch('/admin/users', {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
 
-            document.body.appendChild(notification);
+                if (response.ok) {
+                    users = await response.json();
+                    renderUsers();
+                } else {
+                    console.error('Failed to load users');
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
 
-            // Remove after 3 seconds
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
+        // Save user (create or update)
+        async function saveUser(userData) {
+            const url = editingUserId ? `/admin/users/${editingUserId}` : '/admin/users';
+            const method = editingUserId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification(result.message, 'success');
+                    hideUserForm();
+                    loadUsers(); // Reload users
+                } else {
+                    showNotification(result.message || 'Failed to save user', 'error');
+                    if (result.errors) {
+                        console.error('Validation errors:', result.errors);
+                        // Display validation errors
+                        Object.keys(result.errors).forEach(field => {
+                            showNotification(result.errors[field][0], 'error');
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving user:', error);
+                showNotification('Error saving user', 'error');
+            }
+        }
+
+        // Delete user
+        async function deleteUser(userId) {
+            try {
+                const response = await fetch(`/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification(result.message, 'success');
+                    loadUsers(); // Reload users
+                } else {
+                    showNotification(result.message || 'Failed to delete user', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                showNotification('Error deleting user', 'error');
+            }
         }
 
         // Dark mode functionality
@@ -505,10 +519,9 @@
             userFormTitle.textContent = user ? 'Edit User' : 'Add New User';
 
             if (user) {
-                document.getElementById('userName').value = user.username;
                 document.getElementById('userEmail').value = user.email;
-                document.getElementById('userFullName').value = user.fullName;
-                document.getElementById('userType').value = user.userType;
+                document.getElementById('userFullName').value = user.name;
+                document.getElementById('userType').value = user.role;
                 document.getElementById('passwordField').style.display = 'none';
             } else {
                 userFormElement.reset();
@@ -551,29 +564,19 @@
         userFormElement.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            const formData = {
-                username: document.getElementById('userName').value,
+            const userData = {
+                name: document.getElementById('userFullName').value,
                 email: document.getElementById('userEmail').value,
-                fullName: document.getElementById('userFullName').value,
-                userType: document.getElementById('userType').value,
-                status: 'active'
+                role: document.getElementById('userType').value
             };
 
-            if (editingUserId) {
-                const userIndex = users.findIndex(u => u.id === editingUserId);
-                users[userIndex] = { ...users[userIndex], ...formData };
-            } else {
-                const newUser = {
-                    id: Date.now(),
-                    ...formData,
-                    createdDate: new Date().toISOString().split('T')[0],
-                    lastLogin: 'Never'
-                };
-                users.push(newUser);
+            // Only include password if it's provided (for new users or password updates)
+            const password = document.getElementById('userPassword').value;
+            if (password) {
+                userData.password = password;
             }
 
-            hideUserForm();
-            renderUsers();
+            saveUser(userData);
         });
 
         // Delete functionality
@@ -617,9 +620,10 @@
         cancelDelete.addEventListener('click', hideDeleteModal);
 
         confirmUserDelete.addEventListener('click', () => {
-            users = users.filter(u => u.id !== userToDelete);
-            hideDeleteUserModal();
-            renderUsers();
+            if (userToDelete) {
+                deleteUser(userToDelete);
+                hideDeleteUserModal();
+            }
         });
 
         cancelUserDelete.addEventListener('click', hideDeleteUserModal);
@@ -730,15 +734,14 @@
                     <div class="flex flex-col lg:flex-row gap-6">
                         <div class="lg:w-1/6 flex justify-center lg:justify-start">
                             <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
-                                <span class="text-white font-bold text-xl">${user.fullName.charAt(0)}</span>
+                                <span class="text-white font-bold text-xl">${user.name.charAt(0)}</span>
                             </div>
                         </div>
                         <div class="lg:w-3/6">
                             <div class="flex items-center space-x-3 mb-2">
-                                <h4 class="text-xl font-bold text-gray-900 dark:text-white">${user.fullName}</h4>
-                                <span class="px-3 py-1 rounded-full text-sm font-medium ${roleColors[user.userType]}">${user.userType}</span>
+                                <h4 class="text-xl font-bold text-gray-900 dark:text-white">${user.name}</h4>
+                                <span class="px-3 py-1 rounded-full text-sm font-medium ${roleColors[user.role]}">${user.role}</span>
                             </div>
-                            <p class="text-gray-600 dark:text-gray-300 mb-1">@${user.username}</p>
                             <p class="text-gray-600 dark:text-gray-300 mb-3">${user.email}</p>
                             <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                                 <span>Joined: ${new Date(user.createdDate).toLocaleDateString()}</span>
@@ -753,7 +756,7 @@
                                 </svg>
                                 Edit User
                             </button>
-                            ${user.userType !== 'admin' ? `
+                            ${user.role !== 'admin' ? `
                             <button onclick="showDeleteUserModal(${user.id})" class="flex-1 lg:flex-none px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-all duration-300 flex items-center justify-center">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -772,8 +775,25 @@
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
             loadPosts(); // Load posts from backend
-            renderUsers();
+            loadUsers(); // Load users from backend
         });
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white transition-all duration-300 ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            }`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
     </script>
 
 @endsection
