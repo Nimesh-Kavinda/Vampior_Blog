@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
@@ -16,8 +17,20 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+
+    $user = Auth::user();
+
+    if ($user && $user->role === 'admin') {
+        return redirect()->intended('/admin/dashboard');
+    } elseif ($user && $user->role === 'editor') {
+        return redirect()->intended('/editor/dashboard');
+    } elseif ($user && $user->role === 'reader') {
+        return redirect()->intended('/dashboard');
+    } else {
+        return view('welcome');
+    }
 });
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');
