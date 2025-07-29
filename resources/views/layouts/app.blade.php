@@ -49,7 +49,10 @@
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-4">
                     <h1 class="text-2xl font-bold gradient-text">Vampior Blog</h1>
-                    <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">Role</span>
+                    @guest
+                    @else
+                        <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">{{ Auth::user()->role }}</span>
+                    @endguest
                 </div>
 
                 <div class="hidden md:flex items-center space-x-6">
@@ -62,23 +65,23 @@
                         </svg>
                     </button>
 
-                      <span onclick="window.location.href='#'" class="px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
-                        Name
-                    </span>
-
-                    <a href="{{ route('login') }}">
+                    @guest
+                     <a href="{{ route('login') }}">
                         <button class="px-6 py-2 rounded-lg font-medium transition-all duration-300 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105">
                         Login
                     </button>
                     </a>
-
-                    <form action="{{ route('logout') }}" method="POST">
+                    @else
+                      <span onclick="window.location.href='#'" class="px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
+                        {{ Auth::user()->name }}
+                    </span>
+                      <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="px-6 py-2 rounded-lg font-medium transition-all duration-300 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105">
                         Logout
                     </button>
                     </form>
-
+                    @endguest
 
                 </div>
 
@@ -109,9 +112,19 @@
                     <span>Name</span>
                 </span>
 
-                <button class="flex items-center space-x-2 w-full px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                @guest
+                     <button class="flex items-center space-x-2 w-full px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
                     <span>Login</span>
                 </button>
+                @else
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="flex items-center space-x-2 w-full px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                            <span>Logout</span>
+                        </button>
+                    </form>
+                @endguest
+
 
             </div>
         </div>
