@@ -206,47 +206,13 @@
     </div>
 
     <script>
-        // Sample blog posts data
-        let blogPosts = [
-            {
-                id: 1,
-                title: "The Art of Modern Web Development",
-                excerpt: "Exploring the latest trends and techniques in contemporary web development, from React to advanced CSS animations.",
-                content: "In today's rapidly evolving digital landscape, web development has transformed into an art form that combines technical precision with creative vision. Modern frameworks like React, Vue, and Angular have revolutionized how we build user interfaces, while CSS has evolved to include powerful features like Grid, Flexbox, and custom properties.\n\nThe rise of JAMstack architecture has also changed how we think about web performance and security. By pre-building pages and serving them from CDNs, we can achieve lightning-fast load times while maintaining dynamic functionality through APIs and serverless functions.\n\nAs we look to the future, emerging technologies like WebAssembly, Progressive Web Apps, and AI-powered development tools promise to further transform the landscape of web development.",
-                author: "Alex Morgan",
-                date: "2024-07-25",
-                readTime: "5 min read",
-                image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=400&fit=crop",
-                likes: 42,
-                comments: []
-            },
-            {
-                id: 2,
-                title: "Mastering Dark Mode Design",
-                excerpt: "A comprehensive guide to creating beautiful and accessible dark mode interfaces that users will love.",
-                content: "Dark mode has become more than just a trend—it's now an essential feature that users expect from modern applications. Implementing dark mode effectively requires careful consideration of color contrast, accessibility, and user experience.\n\nWhen designing for dark mode, it's crucial to avoid pure black backgrounds, which can cause eye strain and make text harder to read. Instead, use dark grays and subtle color variations to create depth and hierarchy. Consider how your brand colors translate to dark themes, and ensure that all interactive elements remain clearly visible and accessible.\n\nTesting across different devices and lighting conditions is essential, as what looks good on a desktop monitor may not work well on a mobile device in bright sunlight.",
-                author: "Emma Rodriguez",
-                date: "2024-07-22",
-                readTime: "8 min read",
-                image: "https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&h=400&fit=crop",
-                likes: 67,
-                comments: []
-            },
-            {
-                id: 3,
-                title: "The Future of AI in Creative Industries",
-                excerpt: "How artificial intelligence is reshaping creativity and what it means for designers, writers, and artists.",
-                content: "Artificial intelligence is revolutionizing creative industries in ways we never imagined possible. From AI-generated art and music to automated design tools and writing assistants, technology is becoming an increasingly important collaborator in the creative process.\n\nFor designers, AI tools can automate repetitive tasks, generate initial concepts, and even suggest color palettes based on brand guidelines. Writers are using AI to overcome writer's block, generate ideas, and even help with research and fact-checking.\n\nHowever, this technological advancement also raises important questions about the nature of creativity, authorship, and the future role of human creators. Rather than replacing human creativity, the most successful applications of AI seem to augment and enhance human capabilities, allowing creators to focus on higher-level conceptual work while AI handles routine tasks.",
-                author: "Jordan Blake",
-                date: "2024-07-20",
-                readTime: "12 min read",
-                image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop",
-                likes: 89,
-                comments: []
-            }
-        ];
+        // CSRF token for Laravel
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
 
-        // Sample users data
+        // Blog posts data - will be loaded from backend
+        let blogPosts = [];
+
+        // Sample users data (you can implement user management similarly)
         let users = [
             {
                 id: 1,
@@ -305,6 +271,106 @@
         let postToDelete = null;
         let userToDelete = null;
         let currentTab = 'posts';
+
+        // Load posts from backend
+        async function loadPosts() {
+            try {
+                const response = await fetch('/admin/posts', {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    blogPosts = await response.json();
+                    renderPosts();
+                } else {
+                    console.error('Failed to load posts');
+                }
+            } catch (error) {
+                console.error('Error loading posts:', error);
+            }
+        }
+
+        // Save post (create or update)
+        async function savePost(postData) {
+            const url = editingPostId ? `/admin/posts/${editingPostId}` : '/admin/posts';
+            const method = editingPostId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification(result.message, 'success');
+                    hideEditor();
+                    loadPosts(); // Reload posts
+                } else {
+                    showNotification(result.message || 'Failed to save post', 'error');
+                    if (result.errors) {
+                        console.error('Validation errors:', result.errors);
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving post:', error);
+                showNotification('Error saving post', 'error');
+            }
+        }
+
+        // Delete post
+        async function deletePost(postId) {
+            try {
+                const response = await fetch(`/admin/posts/${postId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification(result.message, 'success');
+                    loadPosts(); // Reload posts
+                } else {
+                    showNotification(result.message || 'Failed to delete post', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting post:', error);
+                showNotification('Error deleting post', 'error');
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white transition-all duration-300 ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            }`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
 
         // Dark mode functionality
         const darkModeToggle = document.getElementById('darkModeToggle');
@@ -476,24 +542,10 @@
                 readTime: document.getElementById('postReadTime').value,
                 excerpt: document.getElementById('postExcerpt').value,
                 content: document.getElementById('postContent').value,
-                date: new Date().toISOString().split('T')[0],
-                likes: 0,
-                comments: []
+                status: 'published' // You can add a status selector if needed
             };
 
-            if (editingPostId) {
-                const postIndex = blogPosts.findIndex(p => p.id === editingPostId);
-                blogPosts[postIndex] = { ...blogPosts[postIndex], ...formData };
-            } else {
-                const newPost = {
-                    id: Date.now(),
-                    ...formData
-                };
-                blogPosts.unshift(newPost);
-            }
-
-            hideEditor();
-            renderPosts();
+            savePost(formData);
         });
 
         userFormElement.addEventListener('submit', (e) => {
@@ -556,9 +608,10 @@
         }
 
         confirmDelete.addEventListener('click', () => {
-            blogPosts = blogPosts.filter(p => p.id !== postToDelete);
-            hideDeleteModal();
-            renderPosts();
+            if (postToDelete) {
+                deletePost(postToDelete);
+                hideDeleteModal();
+            }
         });
 
         cancelDelete.addEventListener('click', hideDeleteModal);
@@ -717,8 +770,10 @@
         }
 
         // Initialize the page
-        renderPosts();
-        renderUsers();
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPosts(); // Load posts from backend
+            renderUsers();
+        });
     </script>
 
 @endsection
