@@ -88,7 +88,7 @@
     </main>
 
     <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center p-4">
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full">
             <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Delete Post</h3>
             <p class="text-gray-600 dark:text-gray-300 mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
@@ -261,10 +261,12 @@
         function showDeleteModal(postId) {
             postToDelete = postId;
             deleteModal.classList.remove('hidden');
+            deleteModal.classList.add('flex');
         }
 
         function hideDeleteModal() {
             deleteModal.classList.add('hidden');
+            deleteModal.classList.remove('flex');
             postToDelete = null;
         }
 
