@@ -49,7 +49,7 @@
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-4">
                     <h1 class="text-2xl font-bold gradient-text">Vampior Blog</h1>
-                    <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">Editor</span>
+                    <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">Role</span>
                 </div>
 
                 <div class="hidden md:flex items-center space-x-6">
@@ -61,12 +61,18 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                         </svg>
                     </button>
-                    <button onclick="window.location.href='#'" class="px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
-                        View Blog
+
+                      <span onclick="window.location.href='#'" class="px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
+                        Name
+                    </span>
+
+                    <a href="{{ route('login') }}">
+                        <button class="px-6 py-2 rounded-lg font-medium transition-all duration-300 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105">
+                        Login
                     </button>
-                    <button class="px-6 py-2 rounded-lg font-medium transition-all duration-300 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105">
-                        Logout
-                    </button>
+                    </a>
+
+
                 </div>
 
                 <div class="md:hidden">
@@ -91,12 +97,15 @@
                     </svg>
                     <span>Toggle Theme</span>
                 </button>
-                <button class="flex items-center space-x-2 w-full px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                    <span>View Blog</span>
-                </button>
+
+                <span class="flex items-center space-x-2 w-full px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                    <span>Name</span>
+                </span>
+
                 <button class="flex items-center space-x-2 w-full px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-                    <span>Logout</span>
+                    <span>Login</span>
                 </button>
+
             </div>
         </div>
     </nav>
