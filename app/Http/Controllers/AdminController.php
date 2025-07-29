@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\User;
 use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\StoreUserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
 class AdminController extends Controller
@@ -165,6 +168,141 @@ class AdminController extends Controller
         return response()->json([
             'success' => true,
             'likes' => $post->likes
+        ]);
+    }
+
+    /**
+     * Get all users as JSON
+     */
+    public function getUsers(): JsonResponse
+    {
+        $users = User::orderBy('created_at', 'desc')->get()->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'createdDate' => $user->created_at->format('Y-m-d'),
+                'lastLogin' => 'Never', // We can implement this later
+                'status' => 'active' // You can add a status column later if needed
+            ];
+        });
+
+        return response()->json($users);
+    }
+
+    /**
+     * Store a new user
+     */
+    public function storeUser(StoreUserRequest $request): JsonResponse
+    {
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User created successfully',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'createdDate' => $user->created_at->format('Y-m-d'),
+                'lastLogin' => 'Never',
+                'status' => 'active'
+            ]
+        ], 201);
+    }
+
+    /**
+     * Update an existing user
+     */
+    public function updateUser(StoreUserRequest $request, $id): JsonResponse
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        // Prevent editing admin users by non-admin users
+        if ($user->role === 'admin' && auth()->user()->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not authorized to edit admin users'
+            ], 403);
+        }
+
+        $updateData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => $request->role,
+        ];
+
+        // Only update password if provided
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->password);
+        }
+
+        $user->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User updated successfully',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'createdDate' => $user->created_at->format('Y-m-d'),
+                'lastLogin' => 'Never',
+                'status' => 'active'
+            ]
+        ]);
+    }
+
+    /**
+     * Delete a user
+     */
+    public function deleteUser($id): JsonResponse
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        // Prevent deleting admin users
+        if ($user->role === 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Admin users cannot be deleted'
+            ], 403);
+        }
+
+        // Prevent users from deleting themselves
+        if ($user->id === auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You cannot delete your own account'
+            ], 403);
+        }
+
+        $user->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User deleted successfully'
         ]);
     }
 }

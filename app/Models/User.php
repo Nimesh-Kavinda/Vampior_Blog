@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -42,4 +43,52 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Scope for admin users
+     */
+    public function scopeAdmin($query)
+    {
+        return $query->where('role', 'admin');
+    }
+
+    /**
+     * Scope for editor users
+     */
+    public function scopeEditor($query)
+    {
+        return $query->where('role', 'editor');
+    }
+
+    /**
+     * Scope for reader users
+     */
+    public function scopeReader($query)
+    {
+        return $query->where('role', 'reader');
+    }
+
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is editor
+     */
+    public function isEditor()
+    {
+        return $this->role === 'editor';
+    }
+
+    /**
+     * Check if user is reader
+     */
+    public function isReader()
+    {
+        return $this->role === 'reader';
+    }
 }
