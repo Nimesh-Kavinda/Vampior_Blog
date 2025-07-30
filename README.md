@@ -1,66 +1,315 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🧛 Vampior Blog
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=200&fit=crop&crop=center" alt="Vampior Blog Logo" width="400">
 </p>
 
-## About Laravel
+<p align="center">
+  <strong>A modern, feature-rich blog platform built with Laravel</strong>
+</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#tech-stack">Tech Stack</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#contributing">Contributing</a>
+</p>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📝 About Vampior Blog
 
-## Learning Laravel
+Vampior Blog is a comprehensive blogging platform that combines the power of Laravel with modern web technologies to deliver an exceptional reading and writing experience. Built with a focus on user experience, performance, and accessibility, it features a multi-role system supporting admins, editors, and readers.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## ✨ Features
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 🎯 Core Features
+- **Multi-Role Authentication System** - Admin, Editor, and Reader roles with appropriate permissions
+- **Interactive Dashboard** - Role-based dashboards with tailored functionality
+- **Rich Blog Management** - Create, edit, publish, and manage blog posts with ease
+- **Tag System** - Organize posts with colorful, customizable tags
+- **Comments System** - Engage readers with threaded comments
+- **Like Functionality** - Allow readers to express appreciation for posts
+- **Single Post Pages** - Dedicated pages for individual blog posts with full functionality
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 🎨 User Experience
+- **Dark/Light Mode** - Seamless theme switching with persistent preferences
+- **Responsive Design** - Perfect experience across all devices and screen sizes
+- **Modern UI/UX** - Clean, minimalist design with smooth animations
+- **Accessibility First** - WCAG compliant with keyboard navigation support
+- **Performance Optimized** - Fast loading times and efficient database queries
 
-## Laravel Sponsors
+### 🔧 Technical Features
+- **RESTful API** - Clean API endpoints for all major functionalities
+- **Database Relationships** - Efficient Eloquent relationships and queries
+- **Migration System** - Version-controlled database schema management
+- **Seeder Support** - Sample data for development and testing
+- **CSRF Protection** - Secure forms and API endpoints
+- **Session Management** - Persistent login states and preferences
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🛠 Tech Stack
 
-### Premium Partners
+### Backend
+- **[Laravel 10.x](https://laravel.com/)** - PHP Web Application Framework
+- **[PHP 8.1+](https://php.net/)** - Server-side scripting language
+- **[MySQL](https://mysql.com/)** - Relational database management system
+- **[Eloquent ORM](https://laravel.com/docs/eloquent)** - Database abstraction layer
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Frontend
+- **[Blade Templates](https://laravel.com/docs/blade)** - Laravel's templating engine
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[Vite](https://vitejs.dev/)** - Modern build tool and development server
+- **Vanilla JavaScript** - For interactive functionality
+- **PostCSS** - CSS post-processing
 
-## Contributing
+### Development Tools
+- **[Composer](https://getcomposer.org/)** - PHP dependency manager
+- **[NPM](https://npmjs.com/)** - Node.js package manager
+- **[Laravel Breeze](https://laravel.com/docs/starter-kits#laravel-breeze)** - Authentication scaffolding
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 📋 Prerequisites
 
-## Code of Conduct
+Before you begin, ensure you have the following installed:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **PHP 8.1 or higher** with the following extensions:
+  - BCMath PHP Extension
+  - Ctype PHP Extension
+  - cURL PHP Extension
+  - DOM PHP Extension
+  - Fileinfo PHP Extension
+  - JSON PHP Extension
+  - Mbstring PHP Extension
+  - OpenSSL PHP Extension
+  - PCRE PHP Extension
+  - PDO PHP Extension
+  - Tokenizer PHP Extension
+  - XML PHP Extension
+- **Composer** (latest version)
+- **Node.js** (v16 or higher) and **NPM**
+- **MySQL** (v8.0 or higher) or **MariaDB**
+- **Git** for version control
 
-## Security Vulnerabilities
+## 🚀 Installation
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 1. Clone the Repository
 
-## License
+```bash
+git clone https://github.com/Nimesh-Kavinda/Vampior_Blog.git
+cd Vampior_Blog
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 2. Install PHP Dependencies
+
+```bash
+composer install
+```
+
+### 3. Install Node.js Dependencies
+
+```bash
+npm install
+```
+
+### 4. Environment Configuration
+
+```bash
+# Copy the environment file
+cp .env.example .env
+
+# Generate application key
+php artisan key:generate
+```
+
+### 5. Database Setup
+
+1. Create a MySQL database for the project
+2. Update your `.env` file with database credentials:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=vampior_blog
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
+
+### 6. Run Database Migrations
+
+```bash
+# Run migrations to create tables
+php artisan migrate
+
+# Seed the database with sample data
+php artisan db:seed
+```
+
+### 7. Build Assets
+
+```bash
+# For development
+npm run dev
+
+# For production
+npm run build
+```
+
+### 8. Start the Development Server
+
+```bash
+php artisan serve
+```
+
+The application will be available at `http://localhost:8000`
+
+## 🎮 Usage
+
+### Default User Accounts
+
+After seeding, you can use these default accounts:
+
+**Admin Account:**
+- Email: `admin@vampior.com`
+- Password: `password`
+
+**Editor Account:**
+- Email: `editor@vampior.com`
+- Password: `password`
+
+**Reader Account:**
+- Email: `reader@vampior.com`
+- Password: `password`
+
+### Role Permissions
+
+| Feature | Admin | Editor | Reader |
+|---------|-------|--------|--------|
+| Create Posts | ✅ | ✅ | ❌ |
+| Edit Own Posts | ✅ | ✅ | ❌ |
+| Edit All Posts | ✅ | ❌ | ❌ |
+| Delete Posts | ✅ | ❌ | ❌ |
+| Manage Users | ✅ | ❌ | ❌ |
+| Like Posts | ✅ | ✅ | ✅ |
+| Comment on Posts | ✅ | ✅ | ✅ |
+| View Published Posts | ✅ | ✅ | ✅ |
+
+### Navigation
+
+- **Welcome Page** (`/`) - Public landing page with recent posts
+- **Dashboard** (`/dashboard`) - Reader dashboard with interactive posts
+- **Admin Dashboard** (`/admin/dashboard`) - Admin management interface
+- **Editor Dashboard** (`/editor/dashboard`) - Editor content management
+- **Single Post** (`/singlepost/{id}`) - Individual post pages with full functionality
+
+## 🔧 Development
+
+### Running in Development Mode
+
+```bash
+# Start Laravel development server
+php artisan serve
+
+# In a separate terminal, start Vite dev server for hot reloading
+npm run dev
+```
+
+### Database Management
+
+```bash
+# Create a new migration
+php artisan make:migration create_table_name
+
+# Create a new model with migration
+php artisan make:model ModelName -m
+
+# Create a new seeder
+php artisan make:seeder SeederName
+
+# Refresh database with fresh data
+php artisan migrate:refresh --seed
+```
+
+### Cache Management
+
+```bash
+# Clear application cache
+php artisan cache:clear
+
+# Clear configuration cache
+php artisan config:clear
+
+# Clear route cache
+php artisan route:clear
+
+# Clear view cache
+php artisan view:clear
+```
+
+## 📁 Project Structure
+
+```
+vampior-blog/
+├── app/
+│   ├── Http/Controllers/     # Application controllers
+│   ├── Models/              # Eloquent models
+│   └── ...
+├── database/
+│   ├── migrations/          # Database migrations
+│   ├── seeders/            # Database seeders
+│   └── factories/          # Model factories
+├── public/                 # Public assets
+├── resources/
+│   ├── css/               # Stylesheets
+│   ├── js/                # JavaScript files
+│   └── views/             # Blade templates
+├── routes/
+│   ├── web.php            # Web routes
+│   └── api.php            # API routes
+├── storage/               # File storage
+├── tests/                 # Test files
+├── .env.example          # Environment template
+├── composer.json         # PHP dependencies
+├── package.json          # Node.js dependencies
+├── tailwind.config.js    # Tailwind configuration
+└── vite.config.js        # Vite configuration
+```
+
+## 🤝 Contributing
+
+We welcome contributions to Vampior Blog! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+
+- Follow PSR-12 coding standards for PHP
+- Use meaningful commit messages
+- Write tests for new features
+- Update documentation as needed
+- Ensure all tests pass before submitting
+
+## 📝 License
+
+This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## 👨‍💻 Author
+
+**Nimesh Kavinda**
+- GitHub: [@Nimesh-Kavinda](https://github.com/Nimesh-Kavinda)
+- Project: [Vampior_Blog](https://github.com/Nimesh-Kavinda/Vampior_Blog)
+
+## 🙏 Acknowledgments
+
+- [Laravel](https://laravel.com/) for the amazing framework
+- [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
+- [Unsplash](https://unsplash.com/) for the beautiful stock images
+- The open-source community for inspiration and resources
+
+---
+
+<p align="center">Made with ❤️ by <a href="https://github.com/Nimesh-Kavinda">Nimesh Kavinda</a></p>
