@@ -91,4 +91,20 @@ class User extends Authenticatable
     {
         return $this->role === 'reader';
     }
+
+    /**
+     * User's post likes
+     */
+    public function postLikes()
+    {
+        return $this->hasMany(PostLike::class);
+    }
+
+    /**
+     * User's comments
+     */
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 }
