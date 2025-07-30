@@ -305,4 +305,45 @@ class AdminController extends Controller
             'message' => 'User deleted successfully'
         ]);
     }
+
+    /**
+     * Get all published posts for guest users (welcome page)
+     */
+    public function getPublishedPosts(): JsonResponse
+    {
+        $posts = Post::where('status', 'published')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($post) {
+                return [
+                    'id' => $post->id,
+                    'title' => $post->title,
+                    'excerpt' => $post->excerpt,
+                    'author' => $post->author,
+                    'image' => $post->image,
+                    'readTime' => $post->read_time,
+                    'date' => $post->created_at->format('Y-m-d'),
+                    'likes' => $post->likes,
+                    'comments' => [] // You can add comments relationship later
+                ];
+            });
+
+        return response()->json($posts);
+    }
+
+    /**
+     * Show single post for guests
+     */
+    public function showPost($id)
+    {
+        $post = Post::where('id', $id)
+            ->where('status', 'published')
+            ->first();
+
+        if (!$post) {
+            abort(404, 'Post not found');
+        }
+
+        return view('singelpost', compact('post'));
+    }
 }
