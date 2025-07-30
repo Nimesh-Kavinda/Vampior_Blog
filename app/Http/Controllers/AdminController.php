@@ -8,6 +8,7 @@ use App\Models\Comment;
 use App\Models\User;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\StoreUserRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
@@ -493,7 +494,7 @@ class AdminController extends Controller
      */
     public function showPost($id)
     {
-        $post = Post::with('tags')
+        $post = Post::with(['tags', 'comments.user', 'postLikes'])
             ->where('id', $id)
             ->where('status', 'published')
             ->first();
@@ -501,6 +502,23 @@ class AdminController extends Controller
         if (!$post) {
             abort(404, 'Post not found');
         }
+
+        // Calculate likes count
+        $post->likes = $post->postLikes()->count();
+
+        // Check if current user has liked this post
+        $post->liked = Auth::check() ? $post->postLikes()->where('user_id', Auth::id())->exists() : false;
+
+        // Format comments for display
+        $post->comments = $post->comments->map(function ($comment) {
+            return [
+                'id' => $comment->id,
+                'content' => $comment->content,
+                'author' => $comment->user->name,
+                'time' => $comment->created_at->diffForHumans(),
+                'created_at' => $comment->created_at->toISOString()
+            ];
+        });
 
         return view('singelpost', compact('post'));
     }

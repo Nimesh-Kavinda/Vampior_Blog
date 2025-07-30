@@ -333,7 +333,9 @@
                 postElement.innerHTML = `
                     <div class="md:flex">
                         <div class="md:w-1/3">
-                            <img src="${post.image || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=400&fit=crop'}" alt="${post.title}" class="w-full h-64 md:h-full object-cover">
+                            <a href="/singlepost/${post.id}" class="block w-full h-64 md:h-full overflow-hidden group">
+                                <img src="${post.image || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=400&fit=crop'}" alt="${post.title}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                            </a>
                         </div>
                         <div class="md:w-2/3 p-8">
                             <div class="flex items-center space-x-4 mb-4">
