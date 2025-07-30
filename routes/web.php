@@ -36,6 +36,12 @@ Route::get('/', function () {
     return view('welcome');
 })->middleware('prevent.back');
 
+// Single post route for guests
+Route::get('/post/{id}', [AdminController::class, 'showPost'])->name('post.show');
+
+// API route for getting published posts (accessible to guests)
+Route::get('/api/posts', [AdminController::class, 'getPublishedPosts'])->name('api.posts');
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');

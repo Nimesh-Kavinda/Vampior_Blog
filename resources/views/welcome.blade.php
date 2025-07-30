@@ -21,54 +21,8 @@
     </main>
 
      <script>
-        // Blog posts data
-        const blogPosts = [
-            {
-                id: 1,
-                title: "The Art of Modern Web Development",
-                excerpt: "Exploring the latest trends and techniques in contemporary web development, from React to advanced CSS animations.",
-                author: "Alex Morgan",
-                date: "2024-07-25",
-                readTime: "5 min read",
-                image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=400&fit=crop",
-                likes: 42,
-                comments: [
-                    { id: 1, author: "Sarah Chen", content: "Great insights! Really helpful for understanding modern frameworks.", time: "2 hours ago" },
-                    { id: 2, author: "Mike Johnson", content: "This changed my perspective on responsive design.", time: "5 hours ago" }
-                ],
-                liked: false
-            },
-            {
-                id: 2,
-                title: "Mastering Dark Mode Design",
-                excerpt: "A comprehensive guide to creating beautiful and accessible dark mode interfaces that users will love.",
-                author: "Emma Rodriguez",
-                date: "2024-07-22",
-                readTime: "8 min read",
-                image: "https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&h=400&fit=crop",
-                likes: 67,
-                comments: [
-                    { id: 1, author: "David Kim", content: "Perfect timing! I'm implementing dark mode in my app right now.", time: "1 day ago" }
-                ],
-                liked: false
-            },
-            {
-                id: 3,
-                title: "The Future of AI in Creative Industries",
-                excerpt: "How artificial intelligence is reshaping creativity and what it means for designers, writers, and artists.",
-                author: "Jordan Blake",
-                date: "2024-07-20",
-                readTime: "12 min read",
-                image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop",
-                likes: 89,
-                comments: [
-                    { id: 1, author: "Lisa Park", content: "Fascinating perspective on AI's role in creativity!", time: "2 days ago" },
-                    { id: 2, author: "Tom Wilson", content: "I'm excited to see where this technology takes us.", time: "2 days ago" },
-                    { id: 3, author: "Ana Garcia", content: "Great balance between optimism and realistic concerns.", time: "3 days ago" }
-                ],
-                liked: false
-            }
-        ];
+        // Blog posts data - will be loaded from database
+        let blogPosts = [];
 
         // Dark mode functionality
         const darkModeToggle = document.getElementById('darkModeToggle');
@@ -100,37 +54,33 @@
             closeIcon.classList.toggle('hidden');
         });
 
-        // Like functionality
+        // Like functionality - redirect to login for guests
         function toggleLike(postId) {
-            const post = blogPosts.find(p => p.id === postId);
-            post.liked = !post.liked;
-            post.likes += post.liked ? 1 : -1;
-            renderBlogPosts();
+            window.location.href = '/login';
         }
 
-        // Comment functionality
+        // Comment functionality - redirect to login for guests
         function addComment(postId) {
-            const commentInput = document.getElementById(`comment-${postId}`);
-            const commentText = commentInput.value.trim();
-
-            if (!commentText) return;
-
-            const post = blogPosts.find(p => p.id === postId);
-            post.comments.push({
-                id: post.comments.length + 1,
-                author: "You",
-                content: commentText,
-                time: "Just now"
-            });
-
-            commentInput.value = '';
-            renderBlogPosts();
+            window.location.href = '/login';
         }
 
-        // Toggle comments visibility
+        // Toggle comments visibility - redirect to login for guests
         function toggleComments(postId) {
-            const commentsSection = document.getElementById(`comments-${postId}`);
-            commentsSection.classList.toggle('hidden');
+            window.location.href = '/login';
+        }
+
+        // Fetch posts from database
+        async function loadPosts() {
+            try {
+                const response = await fetch('/api/posts');
+                const posts = await response.json();
+                blogPosts = posts;
+                renderBlogPosts();
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                // Keep static posts as fallback
+                renderBlogPosts();
+            }
         }
 
         // Render blog posts
@@ -145,7 +95,9 @@
                 postElement.innerHTML = `
                     <div class="md:flex">
                         <div class="md:w-1/3">
-                            <img src="${post.image}" alt="${post.title}" class="w-full h-64 md:h-full object-cover">
+                            <a href="/post/${post.id}" class="block">
+                                <img src="${post.image}" alt="${post.title}" class="w-full h-64 md:h-full object-cover hover:opacity-90 transition-opacity cursor-pointer">
+                            </a>
                         </div>
                         <div class="md:w-2/3 p-8">
                             <div class="flex items-center space-x-4 mb-4">
@@ -165,7 +117,9 @@
                             </div>
 
                             <h3 class="text-2xl md:text-3xl font-bold mb-4 text-gray-900 dark:text-white">
-                                ${post.title}
+                                <a href="/post/${post.id}" class="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
+                                    ${post.title}
+                                </a>
                             </h3>
 
                             <p class="text-lg mb-6 leading-relaxed text-gray-600 dark:text-gray-300">
@@ -174,12 +128,8 @@
 
                             <!-- Interaction Buttons -->
                             <div class="flex items-center space-x-6 mb-6">
-                                <button onclick="toggleLike(${post.id})" class="like-btn flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 ${
-                                    post.liked
-                                        ? 'bg-red-500 text-white'
-                                        : 'bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-500/20 hover:text-red-500 dark:hover:text-red-400'
-                                }">
-                                    <svg class="w-5 h-5 ${post.liked ? 'fill-current' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <button onclick="toggleLike(${post.id})" class="like-btn flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-500/20 hover:text-red-500 dark:hover:text-red-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                                     </svg>
                                     <span>${post.likes}</span>
@@ -189,39 +139,15 @@
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                     </svg>
-                                    <span>${post.comments.length}</span>
+                                    <span>${post.comments ? post.comments.length : 0}</span>
                                 </button>
-                            </div>
 
-                            <!-- Comments Section -->
-                            <div id="comments-${post.id}" class="hidden border-t border-gray-200 dark:border-gray-700 pt-6">
-                                <div class="space-y-4 mb-6">
-                                    ${post.comments.map(comment => `
-                                        <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <span class="font-semibold text-purple-600 dark:text-purple-400">${comment.author}</span>
-                                                <span class="text-xs text-gray-500 dark:text-gray-400">${comment.time}</span>
-                                            </div>
-                                            <p class="text-gray-700 dark:text-gray-300">${comment.content}</p>
-                                        </div>
-                                    `).join('')}
-                                </div>
-
-                                <div class="flex space-x-3">
-                                    <input
-                                        type="text"
-                                        id="comment-${post.id}"
-                                        placeholder="Add a comment..."
-                                        class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                        onkeypress="if(event.key==='Enter') addComment(${post.id})"
-                                    >
-                                    <button
-                                        onclick="addComment(${post.id})"
-                                        class="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-medium"
-                                    >
-                                        Post
-                                    </button>
-                                </div>
+                                <a href="/post/${post.id}" class="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/50">
+                                    <span>Read More</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                    </svg>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -232,7 +158,9 @@
         }
 
         // Initialize the blog
-        renderBlogPosts();
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPosts();
+        });
     </script>
 
 @endsection
