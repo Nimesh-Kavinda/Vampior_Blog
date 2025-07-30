@@ -28,7 +28,8 @@ class StorePostRequest extends FormRequest
             'author' => 'required|string|max:255',
             'image' => 'nullable|url|max:500',
             'readTime' => 'nullable|string|max:50',
-            'status' => 'in:draft,published'
+            'status' => 'in:draft,published',
+            'tags' => 'nullable|string|max:1000'
         ];
     }
 
@@ -48,7 +49,8 @@ class StorePostRequest extends FormRequest
             'image.url' => 'The image must be a valid URL.',
             'image.max' => 'The image URL cannot exceed 500 characters.',
             'readTime.max' => 'The read time cannot exceed 50 characters.',
-            'status.in' => 'The status must be either draft or published.'
+            'status.in' => 'The status must be either draft or published.',
+            'tags.max' => 'The tags field cannot exceed 1000 characters.'
         ];
     }
 }

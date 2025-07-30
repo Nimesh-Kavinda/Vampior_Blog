@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -23,7 +24,8 @@ class EditorController extends Controller
     public function getPosts()
     {
         try {
-            $posts = Post::where('editor_id', Auth::id())
+            $posts = Post::with('tags')
+                        ->where('editor_id', Auth::id())
                         ->orderBy('created_at', 'desc')
                         ->get();
 
@@ -52,7 +54,8 @@ class EditorController extends Controller
                 'author' => 'required|string|max:255',
                 'image' => 'nullable|url',
                 'read_time' => 'nullable|string|max:50',
-                'status' => 'required|in:draft,published'
+                'status' => 'required|in:draft,published',
+                'tags' => 'nullable|string'
             ]);
 
             if ($validator->fails()) {
@@ -74,6 +77,14 @@ class EditorController extends Controller
                 'editor_id' => Auth::id(),
                 'published_at' => $request->status === 'published' ? now() : null,
             ]);
+
+            // Handle tags
+            if ($request->tags) {
+                $this->attachTags($post, $request->tags);
+            }
+
+            // Load the post with tags for response
+            $post->load('tags');
 
             return response()->json([
                 'success' => true,
@@ -113,7 +124,8 @@ class EditorController extends Controller
                 'author' => 'required|string|max:255',
                 'image' => 'nullable|url',
                 'read_time' => 'nullable|string|max:50',
-                'status' => 'required|in:draft,published'
+                'status' => 'required|in:draft,published',
+                'tags' => 'nullable|string'
             ]);
 
             if ($validator->fails()) {
@@ -138,10 +150,19 @@ class EditorController extends Controller
                 'published_at' => (!$wasPublished && $isNowPublished) ? now() : $post->published_at,
             ]);
 
+            // Handle tags
+            $post->tags()->detach(); // Remove existing tags
+            if ($request->tags) {
+                $this->attachTags($post, $request->tags);
+            }
+
+            // Load the post with tags for response
+            $post->load('tags');
+
             return response()->json([
                 'success' => true,
                 'message' => 'Post updated successfully',
-                'post' => $post->fresh()
+                'post' => $post
             ]);
 
         } catch (\Exception $e) {
@@ -215,5 +236,56 @@ class EditorController extends Controller
                 'message' => 'Failed to like post: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Helper method to attach tags to a post
+     */
+    private function attachTags($post, $tagsString)
+    {
+        if (empty($tagsString)) {
+            return;
+        }
+
+        // Split tags by comma and clean them
+        $tagNames = array_map('trim', explode(',', $tagsString));
+        $tagNames = array_filter($tagNames); // Remove empty strings
+
+        $tagIds = [];
+
+        foreach ($tagNames as $tagName) {
+            if (!empty($tagName)) {
+                // Find existing tag or create new one
+                $tag = Tag::firstOrCreate(
+                    ['name' => $tagName],
+                    ['color' => $this->getRandomTagColor()]
+                );
+                $tagIds[] = $tag->id;
+            }
+        }
+
+        // Attach tags to the post
+        $post->tags()->attach($tagIds);
+    }
+
+    /**
+     * Get a random color for new tags
+     */
+    private function getRandomTagColor()
+    {
+        $colors = [
+            '#3B82F6', // Blue
+            '#10B981', // Green
+            '#F59E0B', // Yellow
+            '#EF4444', // Red
+            '#8B5CF6', // Purple
+            '#06B6D4', // Cyan
+            '#F97316', // Orange
+            '#84CC16', // Lime
+            '#EC4899', // Pink
+            '#6366F1'  // Indigo
+        ];
+
+        return $colors[array_rand($colors)];
     }
 }
