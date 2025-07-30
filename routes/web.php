@@ -51,9 +51,19 @@ Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])
     ->middleware(['auth', 'verified', 'role:admin', 'prevent.back'])
     ->name('admin.dashboard');
 
-Route::get('/editor/dashboard', function () {
-    return view('editor.dashboard');
-})->middleware(['auth', 'verified', 'role:editor', 'prevent.back'])->name('editor.dashboard');
+Route::get('/editor/dashboard', [App\Http\Controllers\EditorController::class, 'dashboard'])
+    ->middleware(['auth', 'verified', 'role:editor', 'prevent.back'])
+    ->name('editor.dashboard');
+
+// Editor API routes
+Route::middleware(['auth', 'verified', 'role:editor'])->prefix('editor')->group(function () {
+    // Post management routes for editors
+    Route::get('/posts', [App\Http\Controllers\EditorController::class, 'getPosts'])->name('editor.posts.index');
+    Route::post('/posts', [App\Http\Controllers\EditorController::class, 'storePost'])->name('editor.posts.store');
+    Route::put('/posts/{id}', [App\Http\Controllers\EditorController::class, 'updatePost'])->name('editor.posts.update');
+    Route::delete('/posts/{id}', [App\Http\Controllers\EditorController::class, 'deletePost'])->name('editor.posts.delete');
+    Route::post('/posts/{id}/like', [App\Http\Controllers\EditorController::class, 'toggleLike'])->name('editor.posts.like');
+});
 
 // Admin API routes
 Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
