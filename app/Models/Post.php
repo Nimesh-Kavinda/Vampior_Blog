@@ -61,4 +61,9 @@ class Post extends Model
     {
         return $this->postLikes()->count();
     }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class)->with('user')->orderBy('created_at', 'asc');
+    }
 }

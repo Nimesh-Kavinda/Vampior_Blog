@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use App\Models\PostLike;
+use App\Models\Comment;
 use App\Models\User;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\StoreUserRequest;
@@ -265,6 +266,53 @@ class AdminController extends Controller
     }
 
     /**
+     * Store a comment for a post
+     */
+    public function storeComment(Request $request, $postId): JsonResponse
+    {
+        $request->validate([
+            'content' => 'required|string|max:1000'
+        ]);
+
+        $post = Post::find($postId);
+
+        if (!$post) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Post not found'
+            ], 404);
+        }
+
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required'
+            ], 401);
+        }
+
+        $comment = Comment::create([
+            'user_id' => $user->id,
+            'post_id' => $post->id,
+            'content' => $request->content
+        ]);
+
+        $comment->load('user'); // Load the user relationship
+
+        return response()->json([
+            'success' => true,
+            'comment' => [
+                'id' => $comment->id,
+                'content' => $comment->content,
+                'author' => $comment->user->name,
+                'time' => $comment->created_at->diffForHumans(),
+                'created_at' => $comment->created_at->toISOString()
+            ]
+        ]);
+    }
+
+    /**
      * Get all users as JSON
      */
     public function getUsers(): JsonResponse
@@ -406,7 +454,7 @@ class AdminController extends Controller
     {
         $user = auth()->user();
 
-        $posts = Post::with(['tags', 'postLikes'])
+        $posts = Post::with(['tags', 'postLikes', 'comments'])
             ->where('status', 'published')
             ->orderBy('created_at', 'desc')
             ->get()
@@ -425,7 +473,15 @@ class AdminController extends Controller
                     'likes' => $post->likesCount(),
                     'liked' => $user ? $post->likedByUser($user->id) : false,
                     'tags' => $post->tags,
-                    'comments' => [] // You can add comments relationship later
+                    'comments' => $post->comments->map(function ($comment) {
+                        return [
+                            'id' => $comment->id,
+                            'content' => $comment->content,
+                            'author' => $comment->user->name,
+                            'time' => $comment->created_at->diffForHumans(),
+                            'created_at' => $comment->created_at->toISOString()
+                        ];
+                    })
                 ];
             });
 

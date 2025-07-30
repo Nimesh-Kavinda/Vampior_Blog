@@ -90,9 +90,8 @@
                 if (response.ok) {
                     const data = await response.json();
                     blogPosts = data.map(post => ({
-                        ...post,
-                        comments: post.comments || []
-                        // Don't override liked and likes as they come from the backend
+                        ...post
+                        // Don't override any data as it all comes from the backend now
                     }));
                     renderBlogPosts();
                 } else {
@@ -221,22 +220,58 @@
         }
 
         // Comment functionality
-        function addComment(postId) {
+        async function addComment(postId) {
             const commentInput = document.getElementById(`comment-${postId}`);
             const commentText = commentInput.value.trim();
 
             if (!commentText) return;
 
-            const post = blogPosts.find(p => p.id === postId);
-            post.comments.push({
-                id: post.comments.length + 1,
-                author: "You",
-                content: commentText,
-                time: "Just now"
-            });
+            console.log('Adding comment to post:', postId);
 
-            commentInput.value = '';
-            renderBlogPosts();
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            try {
+                const response = await fetch(`/api/posts/${postId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken || ''
+                    },
+                    body: JSON.stringify({
+                        content: commentText
+                    })
+                });
+
+                console.log('Comment response status:', response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Comment response data:', data);
+
+                    // Update the post in our local data
+                    const post = blogPosts.find(p => p.id === postId);
+                    if (post) {
+                        post.comments.push(data.comment); // Add to end (chronological order)
+                        commentInput.value = '';
+                        renderBlogPosts();
+                        showNotification('Comment added successfully!', 'success');
+                    }
+                } else if (response.status === 401) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.log('Auth error:', errorData);
+                    showNotification('Please log in to comment', 'error');
+                } else {
+                    console.error('Failed to add comment. Status:', response.status);
+                    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                    console.log('Error data:', errorData);
+                    showNotification('Failed to add comment: ' + (errorData.message || 'Please try again.'), 'error');
+                }
+            } catch (error) {
+                console.error('Error adding comment:', error);
+                showNotification('Unable to connect to the server. Please check your connection.', 'error');
+            }
         }
 
         // Toggle comments visibility
@@ -343,15 +378,29 @@
                             <!-- Comments Section -->
                             <div id="comments-${post.id}" class="hidden border-t border-gray-200 dark:border-gray-700 pt-6">
                                 <div class="space-y-4 mb-6">
-                                    ${(post.comments || []).map(comment => `
-                                        <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <span class="font-semibold text-purple-600 dark:text-purple-400">${comment.author}</span>
-                                                <span class="text-xs text-gray-500 dark:text-gray-400">${comment.time}</span>
+                                    ${(post.comments && post.comments.length > 0) ?
+                                        post.comments.map(comment => `
+                                            <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border-l-4 border-purple-200 dark:border-purple-500">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <div class="flex items-center space-x-2">
+                                                        <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                                                            <span class="text-white text-sm font-bold">${comment.author.charAt(0).toUpperCase()}</span>
+                                                        </div>
+                                                        <span class="font-semibold text-purple-600 dark:text-purple-400">${comment.author}</span>
+                                                    </div>
+                                                    <span class="text-xs text-gray-500 dark:text-gray-400">${comment.time}</span>
+                                                </div>
+                                                <p class="text-gray-700 dark:text-gray-300 ml-10">${comment.content}</p>
                                             </div>
-                                            <p class="text-gray-700 dark:text-gray-300">${comment.content}</p>
-                                        </div>
-                                    `).join('')}
+                                        `).join('')
+                                        :
+                                        `<div class="text-center py-8">
+                                            <svg class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                            </svg>
+                                            <p class="text-gray-500 dark:text-gray-400">No comments yet. Be the first to comment!</p>
+                                        </div>`
+                                    }
                                 </div>
 
                                 <div class="flex space-x-3">

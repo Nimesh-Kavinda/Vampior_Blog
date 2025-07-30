@@ -46,6 +46,7 @@ Route::get('/api/posts', [AdminController::class, 'getPublishedPosts'])->name('a
 // Like functionality for authenticated users (web routes to maintain session)
 Route::middleware('auth')->group(function () {
     Route::post('/api/posts/{id}/like', [AdminController::class, 'toggleLike'])->name('api.posts.like');
+    Route::post('/api/posts/{postId}/comments', [AdminController::class, 'storeComment'])->name('api.posts.comments.store');
 
     // Debug route to test authentication
     Route::get('/api/auth-test', function () {
