@@ -54,7 +54,7 @@
         <article class="bg-white dark:bg-gray-800/50 rounded-2xl border border-purple-200/50 dark:border-purple-500/20 shadow-lg overflow-hidden">
             <!-- Featured Image -->
             <div class="w-full h-64 sm:h-80 md:h-96 lg:h-[28rem] overflow-hidden">
-                <img id="postImage" src="{{ $post->image }}" alt="{{ $post->title }}" class="w-full h-full object-cover">
+                <img id="postImage" src="{{ $post->image ?? 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=400&fit=crop' }}" alt="{{ $post->title }}" class="w-full h-full object-cover">
             </div>
 
             <!-- Post Content -->
@@ -63,14 +63,14 @@
                 <div class="flex flex-wrap items-center gap-4 mb-6 text-sm text-gray-600 dark:text-gray-400">
                     <div class="flex items-center space-x-2">
                         <div class="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
-                            <span class="text-white font-bold text-sm" id="authorInitial">{{ substr($post->author, 0, 1) }}</span>
+                            <span class="text-white font-bold text-sm" id="authorInitial">{{ substr($post->author_name ?? $post->author ?? 'Unknown', 0, 1) }}</span>
                         </div>
-                        <span id="postAuthor" class="font-medium">{{ $post->author }}</span>
+                        <span id="postAuthor" class="font-medium">{{ $post->author_name ?? $post->author ?? 'Unknown Author' }}</span>
                     </div>
                     <span>•</span>
                     <span id="postDate">{{ $post->created_at->format('F j, Y') }}</span>
                     <span>•</span>
-                    <span id="postReadTime">{{ $post->read_time }}</span>
+                    <span id="postReadTime">{{ floor(str_word_count($post->content) / 200) + 1 }} min read</span>
                     <span>•</span>
                     <div class="flex items-center space-x-1">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -99,7 +99,7 @@
 
                 <!-- Post Excerpt -->
                 <p id="postExcerpt" class="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-                    {{ $post->excerpt }}
+                    {{ $post->excerpt ?? Illuminate\Support\Str::limit($post->content, 200) }}
                 </p>
 
                 <!-- Post Content -->
@@ -110,21 +110,39 @@
                 <!-- Action Buttons -->
                 <div class="flex items-center justify-between mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
                     <div class="flex items-center space-x-6">
-                        <button id="likeBtn" onclick="redirectToLogin()" class="like-btn flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 bg-gray-100 dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-600 dark:text-gray-300 hover:text-red-500">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                            <span id="likeCount">{{ $post->likes }}</span>
-                            <span>Likes</span>
-                        </button>
+                        @auth
+                            <button id="likeBtn" onclick="toggleLike({{ $post->id }})" class="like-btn flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 {{ $post->liked ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-gray-100 dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-600 dark:text-gray-300 hover:text-red-500' }}">
+                                <svg class="w-5 h-5 {{ $post->liked ? 'fill-current' : '' }}" fill="{{ $post->liked ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                </svg>
+                                <span id="likeCount">{{ $post->likes }}</span>
+                                <span>Likes</span>
+                            </button>
 
-                        <button onclick="redirectToLogin()" class="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 bg-gray-100 dark:bg-gray-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-600 dark:text-gray-300 hover:text-purple-600">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                            </svg>
-                            <span id="commentCount">0</span>
-                            <span>Comments</span>
-                        </button>
+                            <button onclick="toggleComments()" class="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 bg-gray-100 dark:bg-gray-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-600 dark:text-gray-300 hover:text-purple-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                </svg>
+                                <span id="commentCount">{{ count($post->comments) }}</span>
+                                <span>Comments</span>
+                            </button>
+                        @else
+                            <button id="likeBtn" onclick="redirectToLogin()" class="like-btn flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 bg-gray-100 dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-600 dark:text-gray-300 hover:text-red-500">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                </svg>
+                                <span id="likeCount">{{ $post->likes }}</span>
+                                <span>Likes</span>
+                            </button>
+
+                            <button onclick="redirectToLogin()" class="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 bg-gray-100 dark:bg-gray-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-600 dark:text-gray-300 hover:text-purple-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                </svg>
+                                <span id="commentCount">{{ count($post->comments) }}</span>
+                                <span>Comments</span>
+                            </button>
+                        @endauth
                     </div>
 
                     <div class="flex items-center space-x-4">
@@ -138,7 +156,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
                             </svg>
                         </button>
-                        <a href="/" class="p-2 rounded-lg transition-all duration-300 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/50">
+                        <a href="/dashboard" class="p-2 rounded-lg transition-all duration-300 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/50" title="Back to Dashboard">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                             </svg>
@@ -148,8 +166,60 @@
             </div>
         </article>
 
+        <!-- Comments Section -->
+        @auth
+            <section class="mt-12" id="commentsSection" style="display: none;">
+                <div class="bg-white dark:bg-gray-800/50 rounded-2xl border border-purple-200/50 dark:border-purple-500/20 shadow-lg p-8">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Comments ({{ count($post->comments) }})</h2>
+
+                    <!-- Comments List -->
+                    <div id="commentsList" class="space-y-4 mb-6">
+                        @forelse($post->comments as $comment)
+                            <div class="comment-hover bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border-l-4 border-purple-200 dark:border-purple-500">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                                            <span class="text-white text-sm font-bold">{{ substr($comment['author'], 0, 1) }}</span>
+                                        </div>
+                                        <span class="font-semibold text-purple-600 dark:text-purple-400">{{ $comment['author'] }}</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ $comment['time'] }}</span>
+                                </div>
+                                <p class="text-gray-700 dark:text-gray-300 ml-10">{{ $comment['content'] }}</p>
+                            </div>
+                        @empty
+                            <div class="text-center py-8">
+                                <svg class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                </svg>
+                                <p class="text-gray-500 dark:text-gray-400">No comments yet. Be the first to comment!</p>
+                            </div>
+                        @endforelse
+                    </div>
+
+                    <!-- Add Comment Form -->
+                    <div class="flex space-x-3">
+                        <input
+                            type="text"
+                            id="commentInput"
+                            placeholder="Add a comment..."
+                            class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            onkeypress="if(event.key==='Enter') addComment()"
+                        >
+                        <button
+                            onclick="addComment()"
+                            class="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-medium"
+                        >
+                            Post
+                        </button>
+                    </div>
+                </div>
+            </section>
+        @endauth
+
         <!-- Comments Section - Login Required -->
-        <section class="mt-12">
+        @guest
+            <section class="mt-12">
             <div class="bg-white dark:bg-gray-800/50 rounded-2xl border border-purple-200/50 dark:border-purple-500/20 shadow-lg p-8 text-center">
                 <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Join the Conversation</h2>
                 <p class="text-gray-600 dark:text-gray-300 mb-6">Login to like posts, leave comments, and interact with the community.</p>
@@ -161,10 +231,18 @@
                 </a>
             </div>
         </section>
+        @endguest
+
 
     </main>
 
     <script>
+        // Post data
+        const postId = {{ $post->id }};
+        let isLiked = {{ $post->liked ? 'true' : 'false' }};
+        let likesCount = {{ $post->likes }};
+        let commentsCount = {{ count($post->comments) }};
+
         // Dark mode functionality
         const darkModeToggle = document.getElementById('darkModeToggle');
         const darkModeToggleMobile = document.getElementById('darkModeToggleMobile');
@@ -180,8 +258,8 @@
             html.classList.add('dark');
         }
 
-        darkModeToggle.addEventListener('click', toggleDarkMode);
-        darkModeToggleMobile.addEventListener('click', toggleDarkMode);
+        if (darkModeToggle) darkModeToggle.addEventListener('click', toggleDarkMode);
+        if (darkModeToggleMobile) darkModeToggleMobile.addEventListener('click', toggleDarkMode);
 
         // Mobile menu functionality
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
@@ -189,11 +267,209 @@
         const menuIcon = document.getElementById('menuIcon');
         const closeIcon = document.getElementById('closeIcon');
 
-        mobileMenuToggle.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-            menuIcon.classList.toggle('hidden');
-            closeIcon.classList.toggle('hidden');
-        });
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                menuIcon.classList.toggle('hidden');
+                closeIcon.classList.toggle('hidden');
+            });
+        }
+
+        // Like functionality
+        async function toggleLike(postId) {
+            console.log('Toggling like for post:', postId);
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            try {
+                const response = await fetch(`/api/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken || ''
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Like response:', data);
+
+                    // Update local state
+                    isLiked = data.liked;
+                    likesCount = data.likes;
+
+                    // Update UI
+                    updateLikeButton();
+                    showNotification(`Post ${data.liked ? 'liked' : 'unliked'} successfully!`, 'success');
+                } else if (response.status === 401) {
+                    window.location.href = '/login';
+                } else {
+                    console.error('Failed to toggle like');
+                    showNotification('Failed to update like. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error toggling like:', error);
+                showNotification('Unable to connect to the server.', 'error');
+            }
+        }
+
+        // Update like button appearance
+        function updateLikeButton() {
+            const likeBtn = document.getElementById('likeBtn');
+            const likeCount = document.getElementById('likeCount');
+
+            if (isLiked) {
+                likeBtn.className = 'like-btn flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 bg-red-500 text-white hover:bg-red-600';
+                likeBtn.querySelector('svg').setAttribute('fill', 'currentColor');
+            } else {
+                likeBtn.className = 'like-btn flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 bg-gray-100 dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-600 dark:text-gray-300 hover:text-red-500';
+                likeBtn.querySelector('svg').setAttribute('fill', 'none');
+            }
+
+            likeCount.textContent = likesCount;
+        }
+
+        // Comment functionality
+        async function addComment() {
+            const commentInput = document.getElementById('commentInput');
+            const commentText = commentInput.value.trim();
+
+            if (!commentText) return;
+
+            console.log('Adding comment to post:', postId);
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            try {
+                const response = await fetch(`/api/posts/${postId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken || ''
+                    },
+                    body: JSON.stringify({
+                        content: commentText
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Comment response:', data);
+
+                    // Add comment to UI
+                    addCommentToUI(data.comment);
+                    commentInput.value = '';
+                    commentsCount++;
+                    updateCommentCount();
+                    showNotification('Comment added successfully!', 'success');
+                } else if (response.status === 401) {
+                    window.location.href = '/login';
+                } else {
+                    console.error('Failed to add comment');
+                    showNotification('Failed to add comment. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding comment:', error);
+                showNotification('Unable to connect to the server.', 'error');
+            }
+        }
+
+        // Add comment to UI
+        function addCommentToUI(comment) {
+            const commentsList = document.getElementById('commentsList');
+
+            // Remove "no comments" message if it exists
+            const noCommentsMsg = commentsList.querySelector('.text-center');
+            if (noCommentsMsg) {
+                noCommentsMsg.remove();
+            }
+
+            const commentHTML = `
+                <div class="comment-hover bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border-l-4 border-purple-200 dark:border-purple-500">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                                <span class="text-white text-sm font-bold">${comment.author.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <span class="font-semibold text-purple-600 dark:text-purple-400">${comment.author}</span>
+                        </div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">${comment.time}</span>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300 ml-10">${comment.content}</p>
+                </div>
+            `;
+
+            commentsList.insertAdjacentHTML('beforeend', commentHTML);
+        }
+
+        // Update comment count
+        function updateCommentCount() {
+            const commentCountElement = document.getElementById('commentCount');
+            const commentsTitle = document.querySelector('#commentsSection h2');
+
+            if (commentCountElement) {
+                commentCountElement.textContent = commentsCount;
+            }
+            if (commentsTitle) {
+                commentsTitle.textContent = `Comments (${commentsCount})`;
+            }
+        }
+
+        // Toggle comments section
+        function toggleComments() {
+            const commentsSection = document.getElementById('commentsSection');
+            if (commentsSection.style.display === 'none') {
+                commentsSection.style.display = 'block';
+                commentsSection.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                commentsSection.style.display = 'none';
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'error') {
+            // Create notification element if it doesn't exist
+            let notification = document.getElementById('notification');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'notification';
+                notification.className = 'fixed top-4 right-4 z-50 max-w-sm';
+                document.body.appendChild(notification);
+            }
+
+            const bgColor = type === 'success' ? 'border-green-500' : 'border-red-500';
+            notification.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 border-l-4 ${bgColor} p-4 shadow-lg rounded-lg">
+                    <div class="flex">
+                        <div class="ml-3">
+                            <p class="text-sm text-gray-700 dark:text-gray-300">${message}</p>
+                        </div>
+                        <div class="ml-auto pl-3">
+                            <button onclick="hideNotification()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            notification.classList.remove('hidden');
+            setTimeout(hideNotification, 5000);
+        }
+
+        // Hide notification
+        function hideNotification() {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.classList.add('hidden');
+            }
+        }
 
         // Guest redirection functions
         function redirectToLogin() {
@@ -211,15 +487,18 @@
             } else {
                 // Fallback for browsers that don't support Web Share API
                 navigator.clipboard.writeText(window.location.href).then(() => {
-                    alert('Link copied to clipboard!');
+                    showNotification('Link copied to clipboard!', 'success');
                 });
             }
         }
 
         // Bookmark functionality
         function bookmarkPost() {
-            // Redirect to login for guests
-            window.location.href = '/login';
+            @auth
+                showNotification('Bookmark feature coming soon!', 'success');
+            @else
+                window.location.href = '/login';
+            @endauth
         }
     </script>
 

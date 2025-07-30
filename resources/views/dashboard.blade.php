@@ -2,6 +2,19 @@
 
 @section('content')
 
+<style>
+    .tag-hover {
+        transition: all 0.2s ease;
+    }
+    .tag-hover:hover {
+        transform: translateY(-1px) scale(1.05);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    .dark .tag-hover:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+</style>
+
     <header class="py-20 px-4 text-center">
         <div class="max-w-4xl mx-auto">
             <h2 class="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 dark:from-purple-400 dark:via-pink-400 dark:to-red-400 bg-clip-text text-transparent">
@@ -320,16 +333,11 @@
                 postElement.innerHTML = `
                     <div class="md:flex">
                         <div class="md:w-1/3">
-                            <img src="${post.image || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=400&fit=crop'}" alt="${post.title}" class="w-full h-64 md:h-full object-cover">
+                            <a href="/singlepost/${post.id}" class="block w-full h-64 md:h-full overflow-hidden group">
+                                <img src="${post.image || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=400&fit=crop'}" alt="${post.title}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                            </a>
                         </div>
                         <div class="md:w-2/3 p-8">
-                            <div class="flex flex-wrap items-center gap-4 mb-4">
-                                ${(post.tags || []).map(tag => `
-                                    <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-sm rounded-full">
-                                        ${tag.name}
-                                    </span>
-                                `).join('')}
-                            </div>
                             <div class="flex items-center space-x-4 mb-4">
                                 <span class="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
                                     ${post.author_name || post.author || 'Unknown Author'}
@@ -353,6 +361,17 @@
                             <p class="text-lg mb-6 leading-relaxed text-gray-600 dark:text-gray-300">
                                 ${post.content ? post.content.substring(0, 200) + '...' : (post.excerpt || 'No description available.')}
                             </p>
+
+                            <!-- Tags Section -->
+                            ${(post.tags && post.tags.length > 0) ? `
+                                <div class="flex flex-wrap gap-2 mb-6">
+                                    ${post.tags.map(tag => `
+                                        <span class="tag-hover inline-block px-3 py-1 text-sm rounded-full text-white font-medium shadow-sm cursor-default" style="background-color: ${tag.color || '#8B5CF6'}">
+                                            ${tag.name}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
 
                             <!-- Interaction Buttons -->
                             <div class="flex items-center space-x-6 mb-6">
