@@ -18,7 +18,8 @@ class Post extends Model
         'read_time',
         'likes',
         'published_at',
-        'status'
+        'status',
+        'editor_id'
     ];
 
     protected $casts = [
@@ -34,5 +35,10 @@ class Post extends Model
     public function scopeDraft($query)
     {
         return $query->where('status', 'draft');
+    }
+
+    public function editor()
+    {
+        return $this->belongsTo(User::class, 'editor_id');
     }
 }

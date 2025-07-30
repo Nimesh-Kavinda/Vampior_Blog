@@ -42,7 +42,7 @@
                         </div>
                     </div>
 
-                    <div class="grid md:grid-cols-2 gap-6">
+                    <div class="grid md:grid-cols-3 gap-6">
                         <div>
                             <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Image URL</label>
                             <input type="url" id="postImage" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300" placeholder="https://example.com/image.jpg">
@@ -50,6 +50,13 @@
                         <div>
                             <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Read Time</label>
                             <input type="text" id="postReadTime" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300" placeholder="5 min read">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Status</label>
+                            <select id="postStatus" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300">
+                                <option value="draft">Draft</option>
+                                <option value="published">Published</option>
+                            </select>
                         </div>
                     </div>
 
@@ -104,46 +111,8 @@
     </div>
 
     <script>
-        // Sample blog posts data
-        let blogPosts = [
-            {
-                id: 1,
-                title: "The Art of Modern Web Development",
-                excerpt: "Exploring the latest trends and techniques in contemporary web development, from React to advanced CSS animations.",
-                content: "In today's rapidly evolving digital landscape, web development has transformed into an art form that combines technical precision with creative vision. Modern frameworks like React, Vue, and Angular have revolutionized how we build user interfaces, while CSS has evolved to include powerful features like Grid, Flexbox, and custom properties.\n\nThe rise of JAMstack architecture has also changed how we think about web performance and security. By pre-building pages and serving them from CDNs, we can achieve lightning-fast load times while maintaining dynamic functionality through APIs and serverless functions.\n\nAs we look to the future, emerging technologies like WebAssembly, Progressive Web Apps, and AI-powered development tools promise to further transform the landscape of web development.",
-                author: "Alex Morgan",
-                date: "2024-07-25",
-                readTime: "5 min read",
-                image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=400&fit=crop",
-                likes: 42,
-                comments: []
-            },
-            {
-                id: 2,
-                title: "Mastering Dark Mode Design",
-                excerpt: "A comprehensive guide to creating beautiful and accessible dark mode interfaces that users will love.",
-                content: "Dark mode has become more than just a trend—it's now an essential feature that users expect from modern applications. Implementing dark mode effectively requires careful consideration of color contrast, accessibility, and user experience.\n\nWhen designing for dark mode, it's crucial to avoid pure black backgrounds, which can cause eye strain and make text harder to read. Instead, use dark grays and subtle color variations to create depth and hierarchy. Consider how your brand colors translate to dark themes, and ensure that all interactive elements remain clearly visible and accessible.\n\nTesting across different devices and lighting conditions is essential, as what looks good on a desktop monitor may not work well on a mobile device in bright sunlight.",
-                author: "Emma Rodriguez",
-                date: "2024-07-22",
-                readTime: "8 min read",
-                image: "https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&h=400&fit=crop",
-                likes: 67,
-                comments: []
-            },
-            {
-                id: 3,
-                title: "The Future of AI in Creative Industries",
-                excerpt: "How artificial intelligence is reshaping creativity and what it means for designers, writers, and artists.",
-                content: "Artificial intelligence is revolutionizing creative industries in ways we never imagined possible. From AI-generated art and music to automated design tools and writing assistants, technology is becoming an increasingly important collaborator in the creative process.\n\nFor designers, AI tools can automate repetitive tasks, generate initial concepts, and even suggest color palettes based on brand guidelines. Writers are using AI to overcome writer's block, generate ideas, and even help with research and fact-checking.\n\nHowever, this technological advancement also raises important questions about the nature of creativity, authorship, and the future role of human creators. Rather than replacing human creativity, the most successful applications of AI seem to augment and enhance human capabilities, allowing creators to focus on higher-level conceptual work while AI handles routine tasks.",
-                author: "Jordan Blake",
-                date: "2024-07-20",
-                readTime: "12 min read",
-                image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop",
-                likes: 89,
-                comments: []
-            }
-        ];
-
+        // Variables
+        let blogPosts = [];
         let editingPostId = null;
         let postToDelete = null;
 
@@ -162,8 +131,8 @@
             html.classList.add('dark');
         }
 
-        darkModeToggle.addEventListener('click', toggleDarkMode);
-        darkModeToggleMobile.addEventListener('click', toggleDarkMode);
+        if (darkModeToggle) darkModeToggle.addEventListener('click', toggleDarkMode);
+        if (darkModeToggleMobile) darkModeToggleMobile.addEventListener('click', toggleDarkMode);
 
         // Mobile menu functionality
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
@@ -171,11 +140,13 @@
         const menuIcon = document.getElementById('menuIcon');
         const closeIcon = document.getElementById('closeIcon');
 
-        mobileMenuToggle.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-            menuIcon.classList.toggle('hidden');
-            closeIcon.classList.toggle('hidden');
-        });
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                menuIcon.classList.toggle('hidden');
+                closeIcon.classList.toggle('hidden');
+            });
+        }
 
         // Editor functionality
         const editorForm = document.getElementById('editorForm');
@@ -184,6 +155,106 @@
         const cancelEditBtn = document.getElementById('cancelEdit');
         const postForm = document.getElementById('postForm');
         const editorTitle = document.getElementById('editorTitle');
+
+        // API Functions
+        async function loadPosts() {
+            try {
+                const response = await fetch('/editor/posts', {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    blogPosts = data.posts;
+                    renderPosts();
+                } else {
+                    showNotification('Failed to load posts: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                showNotification('Failed to load posts', 'error');
+            }
+        }
+
+        async function savePost(postData) {
+            try {
+                const url = editingPostId ? `/editor/posts/${editingPostId}` : '/editor/posts';
+                const method = editingPostId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    hideEditor();
+                    loadPosts(); // Reload posts from server
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error saving post:', error);
+                showNotification('Failed to save post', 'error');
+            }
+        }
+
+        async function deletePost(postId) {
+            try {
+                const response = await fetch(`/editor/posts/${postId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    loadPosts(); // Reload posts from server
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting post:', error);
+                showNotification('Failed to delete post', 'error');
+            }
+        }
+
+        // UI Functions
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
 
         createNewPostBtn.addEventListener('click', () => {
             showEditor();
@@ -201,9 +272,10 @@
                 document.getElementById('postTitle').value = post.title;
                 document.getElementById('postAuthor').value = post.author;
                 document.getElementById('postImage').value = post.image;
-                document.getElementById('postReadTime').value = post.readTime;
+                document.getElementById('postReadTime').value = post.read_time || post.readTime || '';
                 document.getElementById('postExcerpt').value = post.excerpt;
                 document.getElementById('postContent').value = post.content;
+                document.getElementById('postStatus').value = post.status;
             } else {
                 postForm.reset();
             }
@@ -221,36 +293,26 @@
         }
 
         // Form submission
-        postForm.addEventListener('submit', (e) => {
+        postForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const formData = {
                 title: document.getElementById('postTitle').value,
                 author: document.getElementById('postAuthor').value,
                 image: document.getElementById('postImage').value,
-                readTime: document.getElementById('postReadTime').value,
+                read_time: document.getElementById('postReadTime').value,
                 excerpt: document.getElementById('postExcerpt').value,
                 content: document.getElementById('postContent').value,
-                date: new Date().toISOString().split('T')[0],
-                likes: 0,
-                comments: []
+                status: document.getElementById('postStatus').value
             };
 
-            if (editingPostId) {
-                // Edit existing post
-                const postIndex = blogPosts.findIndex(p => p.id === editingPostId);
-                blogPosts[postIndex] = { ...blogPosts[postIndex], ...formData };
-            } else {
-                // Create new post
-                const newPost = {
-                    id: Date.now(),
-                    ...formData
-                };
-                blogPosts.unshift(newPost);
+            // Basic validation
+            if (!formData.title || !formData.excerpt || !formData.content || !formData.author) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
             }
 
-            hideEditor();
-            renderPosts();
+            await savePost(formData);
         });
 
         // Delete functionality
@@ -270,10 +332,11 @@
             postToDelete = null;
         }
 
-        confirmDelete.addEventListener('click', () => {
-            blogPosts = blogPosts.filter(p => p.id !== postToDelete);
-            hideDeleteModal();
-            renderPosts();
+        confirmDelete.addEventListener('click', async () => {
+            if (postToDelete) {
+                await deletePost(postToDelete);
+                hideDeleteModal();
+            }
         });
 
         cancelDelete.addEventListener('click', hideDeleteModal);
@@ -307,26 +370,41 @@
                 const postElement = document.createElement('div');
                 postElement.className = 'card-hover bg-white dark:bg-gray-800/50 rounded-2xl border border-purple-200/50 dark:border-purple-500/20 p-6 shadow-lg';
 
+                // Format the post data to match the expected format
+                const formattedPost = {
+                    id: post.id,
+                    title: post.title,
+                    excerpt: post.excerpt,
+                    content: post.content,
+                    author: post.author,
+                    image: post.image,
+                    read_time: post.read_time,
+                    status: post.status
+                };
+
                 postElement.innerHTML = `
                     <div class="flex flex-col lg:flex-row gap-6">
                         <div class="lg:w-1/4">
                             <img src="${post.image}" alt="${post.title}" class="w-full h-48 lg:h-32 object-cover rounded-lg">
                         </div>
                         <div class="lg:w-2/4">
-                            <h4 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">${post.title}</h4>
+                            <div class="flex items-center space-x-2 mb-2">
+                                <h4 class="text-xl font-bold text-gray-900 dark:text-white">${post.title}</h4>
+                                <span class="px-2 py-1 text-xs rounded-full ${post.status === 'published' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'}">${post.status}</span>
+                            </div>
                             <p class="text-gray-600 dark:text-gray-300 mb-3">${post.excerpt}</p>
                             <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                                 <span>${post.author}</span>
                                 <span>•</span>
-                                <span>${new Date(post.date).toLocaleDateString()}</span>
+                                <span>${new Date(post.created_at).toLocaleDateString()}</span>
                                 <span>•</span>
-                                <span>${post.readTime}</span>
+                                <span>${post.read_time}</span>
                                 <span>•</span>
                                 <span>${post.likes} likes</span>
                             </div>
                         </div>
                         <div class="lg:w-1/4 flex lg:flex-col gap-3">
-                            <button onclick="showEditor(${JSON.stringify(post).replace(/"/g, '&quot;')})" class="flex-1 lg:flex-none px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-all duration-300 flex items-center justify-center">
+                            <button onclick="showEditor(${JSON.stringify(formattedPost).replace(/"/g, '&quot;')})" class="flex-1 lg:flex-none px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-all duration-300 flex items-center justify-center">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
@@ -353,9 +431,10 @@
             window.addEventListener('popstate', function(event) {
                 history.pushState(null, null, window.location.href);
             });
-        });
 
-        renderPosts();
+            // Load posts from server
+            loadPosts();
+        });
     </script>
 
 @endsection
