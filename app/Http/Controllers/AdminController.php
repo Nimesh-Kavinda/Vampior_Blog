@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\PostLike;
 use App\Models\User;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\StoreUserRequest;
@@ -219,11 +220,47 @@ class AdminController extends Controller
             ], 404);
         }
 
-        $post->increment('likes');
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication required',
+                'debug' => 'User not authenticated'
+            ], 401);
+        }
+
+        // Check if user already liked this post
+        $existingLike = PostLike::where('user_id', $user->id)
+                                ->where('post_id', $post->id)
+                                ->first();
+
+        $liked = false;
+
+        if ($existingLike) {
+            // Unlike the post
+            $existingLike->delete();
+            $liked = false;
+        } else {
+            // Like the post
+            PostLike::create([
+                'user_id' => $user->id,
+                'post_id' => $post->id
+            ]);
+            $liked = true;
+        }
+
+        $likesCount = $post->likesCount();
 
         return response()->json([
             'success' => true,
-            'likes' => $post->likes
+            'liked' => $liked,
+            'likes' => $likesCount,
+            'debug' => [
+                'user_id' => $user->id,
+                'post_id' => $post->id,
+                'action' => $liked ? 'liked' : 'unliked'
+            ]
         ]);
     }
 
@@ -367,20 +404,26 @@ class AdminController extends Controller
      */
     public function getPublishedPosts(): JsonResponse
     {
-        $posts = Post::with('tags')
+        $user = auth()->user();
+
+        $posts = Post::with(['tags', 'postLikes'])
             ->where('status', 'published')
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function ($post) {
+            ->map(function ($post) use ($user) {
                 return [
                     'id' => $post->id,
                     'title' => $post->title,
                     'excerpt' => $post->excerpt,
+                    'content' => $post->content,
                     'author' => $post->author,
+                    'author_name' => $post->author,
                     'image' => $post->image,
                     'readTime' => $post->read_time,
                     'date' => $post->created_at->format('Y-m-d'),
-                    'likes' => $post->likes,
+                    'created_at' => $post->created_at->toISOString(),
+                    'likes' => $post->likesCount(),
+                    'liked' => $user ? $post->likedByUser($user->id) : false,
                     'tags' => $post->tags,
                     'comments' => [] // You can add comments relationship later
                 ];

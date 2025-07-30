@@ -43,6 +43,25 @@ Route::get('/singlepost/{id}', [AdminController::class, 'showPost'])->name('sing
 // API route for getting published posts (accessible to guests)
 Route::get('/api/posts', [AdminController::class, 'getPublishedPosts'])->name('api.posts');
 
+// Like functionality for authenticated users (web routes to maintain session)
+Route::middleware('auth')->group(function () {
+    Route::post('/api/posts/{id}/like', [AdminController::class, 'toggleLike'])->name('api.posts.like');
+
+    // Debug route to test authentication
+    Route::get('/api/auth-test', function () {
+        $user = auth()->user();
+        return response()->json([
+            'authenticated' => auth()->check(),
+            'user' => $user ? [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role
+            ] : null
+        ]);
+    })->name('api.auth.test');
+});
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');

@@ -46,4 +46,19 @@ class Post extends Model
     {
         return $this->belongsToMany(Tag::class);
     }
+
+    public function postLikes()
+    {
+        return $this->hasMany(PostLike::class);
+    }
+
+    public function likedByUser($userId)
+    {
+        return $this->postLikes()->where('user_id', $userId)->exists();
+    }
+
+    public function likesCount()
+    {
+        return $this->postLikes()->count();
+    }
 }

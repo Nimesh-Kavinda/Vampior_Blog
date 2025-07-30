@@ -10,9 +10,28 @@
             <p class="text-xl md:text-2xl mb-8 text-gray-600 dark:text-gray-300">
                 Discover stories, insights, and ideas that matter
             </p>
+
             <div class="w-24 h-1 mx-auto rounded-full bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400"></div>
         </div>
     </header>
+
+    <!-- Notification Container -->
+    <div id="notification" class="fixed top-4 right-4 z-50 hidden max-w-sm">
+        <div class="bg-white dark:bg-gray-800 border-l-4 border-red-500 p-4 shadow-lg rounded-lg">
+            <div class="flex">
+                <div class="ml-3">
+                    <p class="text-sm text-gray-700 dark:text-gray-300" id="notification-message"></p>
+                </div>
+                <div class="ml-auto pl-3">
+                    <button onclick="hideNotification()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <main class="max-w-6xl mx-auto px-4 pb-20">
         <div class="grid gap-8 lg:gap-12" id="blogPosts">
@@ -72,9 +91,8 @@
                     const data = await response.json();
                     blogPosts = data.map(post => ({
                         ...post,
-                        comments: post.comments || [],
-                        liked: false,
-                        likes: post.likes || 0
+                        comments: post.comments || []
+                        // Don't override liked and likes as they come from the backend
                     }));
                     renderBlogPosts();
                 } else {
@@ -103,12 +121,103 @@
             `;
         }
 
+        // Show notification
+        function showNotification(message, type = 'error') {
+            const notification = document.getElementById('notification');
+            const messageElement = document.getElementById('notification-message');
+            const container = notification.querySelector('div');
+
+            messageElement.textContent = message;
+
+            // Update colors based on type
+            container.className = `bg-white dark:bg-gray-800 border-l-4 p-4 shadow-lg rounded-lg ${
+                type === 'success' ? 'border-green-500' : 'border-red-500'
+            }`;
+
+            notification.classList.remove('hidden');
+
+            // Auto-hide after 5 seconds
+            setTimeout(hideNotification, 5000);
+        }
+
+        // Hide notification
+        function hideNotification() {
+            document.getElementById('notification').classList.add('hidden');
+        }
+
+        // Test authentication function
+        async function testAuth() {
+            try {
+                const response = await fetch('/api/auth-test', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Auth test result:', data);
+                    showNotification(`Auth Status: ${data.authenticated ? 'Logged in as ' + data.user.name : 'Not logged in'}`, data.authenticated ? 'success' : 'error');
+                } else {
+                    console.error('Auth test failed. Status:', response.status);
+                    showNotification('Auth test failed', 'error');
+                }
+            } catch (error) {
+                console.error('Error testing auth:', error);
+                showNotification('Auth test error', 'error');
+            }
+        }
+
         // Like functionality
-        function toggleLike(postId) {
-            const post = blogPosts.find(p => p.id === postId);
-            post.liked = !post.liked;
-            post.likes += post.liked ? 1 : -1;
-            renderBlogPosts();
+        async function toggleLike(postId) {
+            console.log('Attempting to toggle like for post:', postId);
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            console.log('CSRF Token:', csrfToken ? 'Present' : 'Missing');
+
+            try {
+                const response = await fetch(`/api/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken || ''
+                    }
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Like response data:', data);
+
+                    // Update the post in our local data
+                    const post = blogPosts.find(p => p.id === postId);
+                    if (post) {
+                        post.liked = data.liked;
+                        post.likes = data.likes;
+                        renderBlogPosts();
+                        showNotification(`Post ${data.liked ? 'liked' : 'unliked'} successfully!`, 'success');
+                    }
+                } else if (response.status === 401) {
+                    // User not authenticated
+                    const errorData = await response.json().catch(() => ({}));
+                    console.log('Auth error:', errorData);
+                    showNotification('Authentication issue: ' + (errorData.debug || errorData.message || 'Please log in'), 'error');
+                } else {
+                    console.error('Failed to toggle like. Status:', response.status);
+                    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                    console.log('Error data:', errorData);
+                    showNotification('Failed to update like: ' + (errorData.message || 'Please try again.'), 'error');
+                }
+            } catch (error) {
+                console.error('Error toggling like:', error);
+                showNotification('Unable to connect to the server. Please check your connection.', 'error');
+            }
         }
 
         // Comment functionality
@@ -214,10 +323,10 @@
                             <div class="flex items-center space-x-6 mb-6">
                                 <button onclick="toggleLike(${post.id})" class="like-btn flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 ${
                                     post.liked
-                                        ? 'bg-red-500 text-white'
+                                        ? 'bg-red-500 text-white hover:bg-red-600'
                                         : 'bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-500/20 hover:text-red-500 dark:hover:text-red-400'
                                 }">
-                                    <svg class="w-5 h-5 ${post.liked ? 'fill-current' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5 ${post.liked ? 'fill-current' : ''}" fill="${post.liked ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                                     </svg>
                                     <span>${post.likes || 0}</span>
