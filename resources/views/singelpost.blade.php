@@ -86,6 +86,17 @@
                     {{ $post->title }}
                 </h1>
 
+                <!-- Tags -->
+                @if($post->tags && $post->tags->count() > 0)
+                    <div class="mb-6">
+                        @foreach($post->tags as $tag)
+                            <span class="inline-block px-3 py-1 text-sm rounded-full text-white mr-2 mb-2" style="background-color: {{ $tag->color }}">
+                                {{ $tag->name }}
+                            </span>
+                        @endforeach
+                    </div>
+                @endif
+
                 <!-- Post Excerpt -->
                 <p id="postExcerpt" class="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
                     {{ $post->excerpt }}

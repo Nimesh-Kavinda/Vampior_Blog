@@ -85,6 +85,12 @@
                     </div>
 
                     <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Tags</label>
+                        <input type="text" id="postTags" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300" placeholder="Enter tags separated by commas (e.g., technology, web development, javascript)">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Separate multiple tags with commas</p>
+                    </div>
+
+                    <div>
                         <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Content</label>
                         <textarea id="postContent" class="editor-textarea w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300" placeholder="Write your blog post content here..."></textarea>
                     </div>
@@ -478,6 +484,14 @@
                 document.getElementById('postReadTime').value = post.readTime;
                 document.getElementById('postExcerpt').value = post.excerpt;
                 document.getElementById('postContent').value = post.content;
+
+                // Handle tags
+                const tagsInput = document.getElementById('postTags');
+                if (post.tags && post.tags.length > 0) {
+                    tagsInput.value = post.tags.map(tag => tag.name).join(', ');
+                } else {
+                    tagsInput.value = '';
+                }
             } else {
                 postForm.reset();
             }
@@ -555,6 +569,7 @@
                 readTime: document.getElementById('postReadTime').value,
                 excerpt: document.getElementById('postExcerpt').value,
                 content: document.getElementById('postContent').value,
+                tags: document.getElementById('postTags').value,
                 status: 'published' // You can add a status selector if needed
             };
 
@@ -663,6 +678,11 @@
                 const postElement = document.createElement('div');
                 postElement.className = 'card-hover bg-white dark:bg-gray-800/50 rounded-2xl border border-purple-200/50 dark:border-purple-500/20 p-6 shadow-lg';
 
+                // Generate tags HTML
+                const tagsHtml = post.tags && post.tags.length > 0
+                    ? post.tags.map(tag => `<span class="inline-block px-2 py-1 text-xs font-medium rounded-full" style="background-color: ${tag.color}20; color: ${tag.color}; border: 1px solid ${tag.color}40;">${tag.name}</span>`).join(' ')
+                    : '';
+
                 postElement.innerHTML = `
                     <div class="flex flex-col lg:flex-row gap-6">
                         <div class="lg:w-1/4">
@@ -671,6 +691,7 @@
                         <div class="lg:w-2/4">
                             <h4 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">${post.title}</h4>
                             <p class="text-gray-600 dark:text-gray-300 mb-3">${post.excerpt}</p>
+                            ${tagsHtml ? `<div class="flex flex-wrap gap-2 mb-3">${tagsHtml}</div>` : ''}
                             <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                                 <span>${post.author}</span>
                                 <span>•</span>

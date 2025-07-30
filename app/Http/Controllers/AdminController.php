@@ -27,7 +27,7 @@ class AdminController extends Controller
      */
     public function getPosts(): JsonResponse
     {
-        $posts = Post::orderBy('created_at', 'desc')->get()->map(function ($post) {
+        $posts = Post::with('tags')->orderBy('created_at', 'desc')->get()->map(function ($post) {
             return [
                 'id' => $post->id,
                 'title' => $post->title,
@@ -40,6 +40,7 @@ class AdminController extends Controller
                 'likes' => $post->likes,
                 'status' => $post->status,
                 'published_at' => $post->published_at?->format('Y-m-d'),
+                'tags' => $post->tags,
                 'comments' => [] // You can add comments relationship later
             ];
         });
@@ -64,6 +65,30 @@ class AdminController extends Controller
             'likes' => 0
         ]);
 
+        // Handle tags
+        if ($request->has('tags') && !empty($request->tags)) {
+            $tagNames = array_map('trim', explode(',', $request->tags));
+            $tagIds = [];
+
+            foreach ($tagNames as $tagName) {
+                if (!empty($tagName)) {
+                    $tag = \App\Models\Tag::firstOrCreate(
+                        ['name' => $tagName],
+                        [
+                            'slug' => \Illuminate\Support\Str::slug($tagName),
+                            'color' => '#' . substr(md5($tagName), 0, 6) // Generate color from tag name
+                        ]
+                    );
+                    $tagIds[] = $tag->id;
+                }
+            }
+
+            $post->tags()->sync($tagIds);
+        }
+
+        // Load the post with tags for response
+        $post->load('tags');
+
         return response()->json([
             'success' => true,
             'message' => 'Post created successfully',
@@ -78,6 +103,7 @@ class AdminController extends Controller
                 'date' => $post->created_at->format('Y-m-d'),
                 'likes' => $post->likes,
                 'status' => $post->status,
+                'tags' => $post->tags,
                 'comments' => []
             ]
         ], 201);
@@ -108,6 +134,35 @@ class AdminController extends Controller
             'published_at' => ($request->status ?? $post->status) === 'published' && !$post->published_at ? now() : $post->published_at
         ]);
 
+        // Handle tags
+        if ($request->has('tags')) {
+            if (empty($request->tags)) {
+                // Remove all tags if tags field is empty
+                $post->tags()->detach();
+            } else {
+                $tagNames = array_map('trim', explode(',', $request->tags));
+                $tagIds = [];
+
+                foreach ($tagNames as $tagName) {
+                    if (!empty($tagName)) {
+                        $tag = \App\Models\Tag::firstOrCreate(
+                            ['name' => $tagName],
+                            [
+                                'slug' => \Illuminate\Support\Str::slug($tagName),
+                                'color' => '#' . substr(md5($tagName), 0, 6) // Generate color from tag name
+                            ]
+                        );
+                        $tagIds[] = $tag->id;
+                    }
+                }
+
+                $post->tags()->sync($tagIds);
+            }
+        }
+
+        // Load the post with tags for response
+        $post->load('tags');
+
         return response()->json([
             'success' => true,
             'message' => 'Post updated successfully',
@@ -122,6 +177,7 @@ class AdminController extends Controller
                 'date' => $post->created_at->format('Y-m-d'),
                 'likes' => $post->likes,
                 'status' => $post->status,
+                'tags' => $post->tags,
                 'comments' => []
             ]
         ]);
@@ -311,7 +367,8 @@ class AdminController extends Controller
      */
     public function getPublishedPosts(): JsonResponse
     {
-        $posts = Post::where('status', 'published')
+        $posts = Post::with('tags')
+            ->where('status', 'published')
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($post) {
@@ -324,6 +381,7 @@ class AdminController extends Controller
                     'readTime' => $post->read_time,
                     'date' => $post->created_at->format('Y-m-d'),
                     'likes' => $post->likes,
+                    'tags' => $post->tags,
                     'comments' => [] // You can add comments relationship later
                 ];
             });
@@ -336,7 +394,8 @@ class AdminController extends Controller
      */
     public function showPost($id)
     {
-        $post = Post::where('id', $id)
+        $post = Post::with('tags')
+            ->where('id', $id)
             ->where('status', 'published')
             ->first();
 

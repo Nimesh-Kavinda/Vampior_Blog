@@ -150,6 +150,13 @@
                                 ${post.excerpt}
                             </p>
 
+                            <!-- Tags -->
+                            ${post.tags && post.tags.length > 0 ? `
+                                <div class="mb-4 md:mb-6">
+                                    ${post.tags.map(tag => `<span class="inline-block px-2 py-1 text-xs rounded-full text-white mr-2 mb-1" style="background-color: ${tag.color}">${tag.name}</span>`).join('')}
+                                </div>
+                            ` : ''}
+
                             <!-- Interaction Buttons -->
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center space-x-4">

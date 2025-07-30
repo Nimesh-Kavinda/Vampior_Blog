@@ -61,6 +61,12 @@
                     </div>
 
                     <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Tags</label>
+                        <input type="text" id="postTags" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300" placeholder="Enter tags separated by commas (e.g., technology, web development, coding)">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Separate multiple tags with commas</p>
+                    </div>
+
+                    <div>
                         <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Excerpt</label>
                         <textarea id="postExcerpt" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300" rows="3" placeholder="Brief description of the post..."></textarea>
                     </div>
@@ -276,6 +282,10 @@
                 document.getElementById('postExcerpt').value = post.excerpt;
                 document.getElementById('postContent').value = post.content;
                 document.getElementById('postStatus').value = post.status;
+
+                // Handle tags
+                const tagNames = post.tags ? post.tags.map(tag => tag.name).join(', ') : '';
+                document.getElementById('postTags').value = tagNames;
             } else {
                 postForm.reset();
             }
@@ -303,7 +313,8 @@
                 read_time: document.getElementById('postReadTime').value,
                 excerpt: document.getElementById('postExcerpt').value,
                 content: document.getElementById('postContent').value,
-                status: document.getElementById('postStatus').value
+                status: document.getElementById('postStatus').value,
+                tags: document.getElementById('postTags').value
             };
 
             // Basic validation
@@ -379,8 +390,14 @@
                     author: post.author,
                     image: post.image,
                     read_time: post.read_time,
-                    status: post.status
+                    status: post.status,
+                    tags: post.tags || []
                 };
+
+                // Generate tags HTML
+                const tagsHtml = post.tags && post.tags.length > 0
+                    ? post.tags.map(tag => `<span class="inline-block px-2 py-1 text-xs rounded-full text-white mr-1 mb-1" style="background-color: ${tag.color}">${tag.name}</span>`).join('')
+                    : '';
 
                 postElement.innerHTML = `
                     <div class="flex flex-col lg:flex-row gap-6">
@@ -393,6 +410,7 @@
                                 <span class="px-2 py-1 text-xs rounded-full ${post.status === 'published' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'}">${post.status}</span>
                             </div>
                             <p class="text-gray-600 dark:text-gray-300 mb-3">${post.excerpt}</p>
+                            ${tagsHtml ? `<div class="mb-3">${tagsHtml}</div>` : ''}
                             <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                                 <span>${post.author}</span>
                                 <span>•</span>
