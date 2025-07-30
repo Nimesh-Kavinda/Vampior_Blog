@@ -774,6 +774,12 @@
 
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
+            // Prevent browser back button
+            history.pushState(null, null, window.location.href);
+            window.addEventListener('popstate', function(event) {
+                history.pushState(null, null, window.location.href);
+            });
+
             loadPosts(); // Load posts from backend
             loadUsers(); // Load users from backend
         });

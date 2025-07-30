@@ -17,32 +17,37 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-
     $user = Auth::user();
 
-    if ($user && $user->role === 'admin') {
-        return redirect()->intended('/admin/dashboard');
-    } elseif ($user && $user->role === 'editor') {
-        return redirect()->intended('/editor/dashboard');
-    } elseif ($user && $user->role === 'reader') {
-        return redirect()->intended('/dashboard');
-    } else {
-        return view('welcome');
+    if ($user) {
+        // Redirect authenticated users to their appropriate dashboard
+        switch ($user->role) {
+            case 'admin':
+                return redirect('/admin/dashboard');
+            case 'editor':
+                return redirect('/editor/dashboard');
+            case 'reader':
+                return redirect('/dashboard');
+            default:
+                return view('welcome');
+        }
     }
-});
+
+    return view('welcome');
+})->middleware('prevent.back');
 
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified', 'role:reader', 'prevent.back'])->name('dashboard');
 
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'role:admin', 'prevent.back'])
     ->name('admin.dashboard');
 
 Route::get('/editor/dashboard', function () {
     return view('editor.dashboard');
-})->middleware(['auth', 'verified'])->name('editor.dashboard');
+})->middleware(['auth', 'verified', 'role:editor', 'prevent.back'])->name('editor.dashboard');
 
 // Admin API routes
 Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {

@@ -347,6 +347,14 @@
         }
 
         // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prevent browser back button
+            history.pushState(null, null, window.location.href);
+            window.addEventListener('popstate', function(event) {
+                history.pushState(null, null, window.location.href);
+            });
+        });
+
         renderPosts();
     </script>
 
