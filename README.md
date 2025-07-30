@@ -1,7 +1,7 @@
 # 🧛 Vampior Blog
 
 <p align="center">
-  <img src="https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=200&fit=crop&crop=center" alt="Vampior Blog Logo" width="400">
+  <img src="./screenshot/vampior_blog.png" alt="Vampior Blog Logo" width="400">
 </p>
 
 <p align="center">
