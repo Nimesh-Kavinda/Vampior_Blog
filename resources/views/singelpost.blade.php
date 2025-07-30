@@ -151,25 +151,6 @@
             </div>
         </section>
 
-        <!-- Related Posts -->
-        <section class="mt-12">
-            <h2 class="text-2xl font-bold mb-8 text-gray-900 dark:text-white">Related Posts</h2>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="card-hover bg-white dark:bg-gray-800/50 rounded-2xl border border-purple-200/50 dark:border-purple-500/20 p-6 shadow-lg overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1558655146-d09347e92766?w=400&h=200&fit=crop" alt="Related post" class="w-full h-40 sm:h-44 md:h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-lg font-bold mb-2 text-gray-900 dark:text-white">Mastering Dark Mode Design</h3>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2">A comprehensive guide to creating beautiful and accessible dark mode interfaces...</p>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Emma Rodriguez • 8 min read</div>
-                </div>
-
-                <div class="card-hover bg-white dark:bg-gray-800/50 rounded-2xl border border-purple-200/50 dark:border-purple-500/20 p-6 shadow-lg overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=200&fit=crop" alt="Related post" class="w-full h-40 sm:h-44 md:h-48 object-cover rounded-lg mb-4">
-                    <h3 class="text-lg font-bold mb-2 text-gray-900 dark:text-white">The Future of AI in Creative Industries</h3>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2">How artificial intelligence is reshaping creativity and what it means for designers...</p>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Jordan Blake • 12 min read</div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <script>
